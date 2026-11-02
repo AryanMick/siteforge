@@ -1,0 +1,13 @@
+node_modules/
+outputs/
+.cache/
+*.log
+.DS_Store
+.next/
+.next-dev/
+.workbench/
+.pagepilot/
+.fixture-lab/
+.stryker-tmp/
+reports/
+*.tsbuildinfo

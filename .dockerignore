@@ -1,0 +1,11 @@
+node_modules
+.next
+.next-dev
+.cache
+.fixture-lab
+outputs
+reports
+.pagepilot
+.workbench
+.stryker-tmp
+.git

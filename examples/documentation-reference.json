@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "references": [
+    {
+      "id": "govinfo-help",
+      "url": "https://www.govinfo.gov/help",
+      "pathPrefix": "/help",
+      "inspiration": [
+        "A documentation-style help index with cross-linked guides, jump navigation, sections, instructional prose and reference tables.",
+        "This supplementary federal reference supplies a modern documentation contrast to the two successfully sampled older state-government sites.",
+        "Invent a small software documentation library; use broad guide/reference structure only, with no copied federal text, logos or documents."
+      ],
+      "config": {
+        "version": 1,
+        "site": { "id": "harbor-docs", "name": "Harbor Index Documentation", "domain": "documentation", "framework": "html", "visualStyle": "modern", "pageCount": 24, "pageSize": 5 },
+        "contentTypes": [
+          { "name": "guide", "label": "Guides", "fieldLayout": "mixed", "relationTo": "reference", "fields": [ { "name": "title", "type": "title" }, { "name": "overview", "type": "text" }, { "name": "prerequisites", "type": "text" }, { "name": "steps", "type": "text" }, { "name": "troubleshooting", "type": "text", "optional": true } ] },
+          { "name": "reference", "label": "Reference", "fieldLayout": "table", "fields": [ { "name": "title", "type": "title" }, { "name": "identifier", "type": "text" }, { "name": "parameters", "type": "text" }, { "name": "returnValue", "type": "text" }, { "name": "version", "type": "text", "optional": true } ] }
+        ],
+        "noise": { "level": "clean" }
+      }
+    }
+  ]
+}

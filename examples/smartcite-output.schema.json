@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://siteforge.test/schemas/smartcite-output-v1.json",
+  "title": "SiteForge tool output, version 1",
+  "description": "What a crawler or migration tool such as Smartcite reports for one website, so SiteForge can score it against the private answer key with `node src/cli.mjs evaluate --truth <site>/private/answer-key.json --actual <this file> --out <dir>`. Only url and cluster are required per page; every other part is scored when present and reported as unavailable when absent. Cluster labels are free text: scoring compares which pages share a label, not the label itself.",
+  "type": "object",
+  "required": ["version", "pages"],
+  "properties": {
+    "version": { "const": 1 },
+    "tool": { "type": "string", "description": "Optional name and version of the tool that produced the output. Not scored." },
+    "schemas": {
+      "type": "object",
+      "description": "Optional: the field names the tool found for each content type.",
+      "additionalProperties": { "type": "array", "items": { "type": "string", "minLength": 1 } }
+    },
+    "pages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["url", "cluster"],
+        "properties": {
+          "url": { "type": "string", "minLength": 1, "description": "Absolute, or relative to the site's address. Fragments are ignored; query strings count." },
+          "cluster": { "type": "string", "minLength": 1, "description": "The tool's group label for pages with the same data structure." },
+          "contentType": { "type": "string", "minLength": 1, "description": "Optional content type name; map tool names to SiteForge names with the evaluator's contentTypeMap option." },
+          "fields": {
+            "type": "object",
+            "description": "Optional field name to extracted text. Names can be mapped with fieldNameMap. Values are compared after Unicode NFC, trimming and whitespace collapsing.",
+            "additionalProperties": { "type": "string" }
+          },
+          "relationships": {
+            "type": "array",
+            "description": "Optional links between records, such as a book's author page.",
+            "items": {
+              "type": "object",
+              "required": ["type", "targetUrl"],
+              "properties": { "type": { "type": "string", "minLength": 1 }, "targetUrl": { "type": "string", "minLength": 1 } }
+            }
+          },
+          "repeatedItems": {
+            "type": "array",
+            "description": "Optional, added 2026-11-02: records listed on a listing page (cards, table rows). Each is matched to the answer key by url when given, otherwise by position.",
+            "items": {
+              "type": "object",
+              "required": ["fields"],
+              "properties": {
+                "url": { "type": "string", "minLength": 1, "description": "The record's own page, if the listing links to it." },
+                "fields": { "type": "object", "additionalProperties": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

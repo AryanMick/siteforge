@@ -1,0 +1,12 @@
+FROM node:24-alpine
+
+WORKDIR /work
+COPY package.json package-lock.json ./
+RUN npm ci --omit=dev --ignore-scripts
+COPY src ./src
+COPY scripts/fixture-gateway.mjs ./scripts/fixture-gateway.mjs
+
+ENV FIXTURE_LAB_DATA_DIR=/work/.fixture-lab \
+    SITEFORGE_GATEWAY_HOST=0.0.0.0 \
+    SITEFORGE_GATEWAY_PORT=4480
+EXPOSE 4480

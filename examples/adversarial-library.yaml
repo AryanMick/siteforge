@@ -1,0 +1,18 @@
+version: 1
+seed: 48291
+site:
+  id: adversarial-library
+  name: Westmere Archive
+  domain: library
+  framework: html
+  visualStyle: legacy
+  pageCount: 60
+  baseUrl: http://127.0.0.1:4310
+contentPool:
+  - "The fictional archive retains Cafe\u0301 and Caf\u00e9 spellings, non\u00a0breaking spaces, and literal &copy; references."
+  - "This invented catalog contains \u65e5\u672c\u8a9e and \u0627\u0644\u0639\u0631\u0628\u064a\u0629 text alongside & symbols and <legacy> annotations."
+noise:
+  level: high
+  types: [extra-wrapper, class-churn, inline-style, reorder-fields, boilerplate, missing-field, label-variation, date-format, malformed-nesting, duplicate-id, missing-metadata, comment-clutter, hidden-boilerplate, duplicate-heading, nested-layout-table, link-variants, broken-image, conflicting-metadata, obsolete-markup]
+transport:
+  profile: mixed

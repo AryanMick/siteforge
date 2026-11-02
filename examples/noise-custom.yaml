@@ -1,0 +1,17 @@
+version: 1
+seed: 48291
+site:
+  id: northstar-library
+  domain: library
+  framework: react
+  visualStyle: conventional
+  pageCount: 500
+noise:
+  level: custom
+  probability: 0.5
+  severity: 2
+  maxPerPage: 3
+  types: [extra-wrapper, class-churn, missing-field, delayed-content]
+  overrides:
+    missing-field: 0.1
+    delayed-content: 0.2

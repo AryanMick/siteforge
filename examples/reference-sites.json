@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "references": [
+    {
+      "id": "maine-archive",
+      "url": "https://www.legislature.maine.gov/lawlib/lldl/lldlhome.htm",
+      "pathPrefix": "/lawlib/lldl/",
+      "inspiration": [
+        "An older HTML legislative collection directory with table-based navigation and chronological document groups.",
+        "Adapt the index-to-series-to-record organization; do not copy laws, source prose, official identities, images or branding.",
+        "The fictional record and series schemas are authored test designs, not claims about the source site's hidden database."
+      ],
+      "config": {
+        "version": 1,
+        "site": { "id": "willow-records", "name": "Willow District Archive", "domain": "records", "framework": "html", "visualStyle": "legacy", "pageCount": 24, "pageSize": 5 },
+        "contentTypes": [
+          { "name": "record", "label": "District Records", "fieldLayout": "mixed", "relationTo": "series", "fields": [ { "name": "title", "type": "title" }, { "name": "reference", "type": "text" }, { "name": "publicationDate", "type": "date" }, { "name": "summary", "type": "text" }, { "name": "edition", "type": "text", "optional": true } ] },
+          { "name": "series", "label": "Archive Series", "fieldLayout": "table", "fields": [ { "name": "title", "type": "title" }, { "name": "dateRange", "type": "text" }, { "name": "scope", "type": "text" }, { "name": "custodian", "type": "person" }, { "name": "accessConditions", "type": "text", "optional": true } ] }
+        ],
+        "noise": { "level": "clean" }
+      }
+    },
+    {
+      "id": "new-york-library",
+      "url": "https://nysl.nysed.gov/scandocs/historical",
+      "pathPrefix": "/scandocs/",
+      "inspiration": [
+        "A content-heavy state-library subject index with topic navigation, collection descriptions and digitized-document links.",
+        "Use a contemporary subject-directory structure and invent the collection, people, descriptions and record identifiers.",
+        "The fictional collection and publication schemas extend that broad organization; they are not inferred ground truth for New York."
+      ],
+      "config": {
+        "version": 1,
+        "site": { "id": "clearfield-library", "name": "Clearfield Research Library", "domain": "library", "framework": "html", "visualStyle": "modern", "pageCount": 24, "pageSize": 5 },
+        "contentTypes": [
+          { "name": "publication", "label": "Publications", "fieldLayout": "mixed", "relationTo": "collection", "fields": [ { "name": "title", "type": "title" }, { "name": "author", "type": "person" }, { "name": "publicationDate", "type": "date" }, { "name": "abstract", "type": "text" }, { "name": "isbn", "type": "isbn", "optional": true } ] },
+          { "name": "collection", "label": "Subject Collections", "fieldLayout": "definition-list", "fields": [ { "name": "title", "type": "title" }, { "name": "scope", "type": "text" }, { "name": "dateRange", "type": "text" }, { "name": "custodian", "type": "person" }, { "name": "accessConditions", "type": "text", "optional": true } ] }
+        ],
+        "noise": { "level": "clean" }
+      }
+    },
+    {
+      "id": "maryland-manual",
+      "url": "https://msa.maryland.gov/msa/mdmanual/html/mmtoc.html",
+      "pathPrefix": "/msa/mdmanual/",
+      "inspiration": [
+        "An HTML government manual organized as branch, agency and local-government directories with cross-linked reference pages.",
+        "Invent a district and its offices, personnel and service information; retain only broad directory and detail-page patterns.",
+        "Use prose-style labeled facts and mixed layouts as controlled variations, not a pixel-for-pixel copy of the manual."
+      ],
+      "config": {
+        "version": 1,
+        "site": { "id": "cedar-government", "name": "Cedar District Directory", "domain": "municipality", "framework": "html", "visualStyle": "conventional", "pageCount": 24, "pageSize": 5 },
+        "contentTypes": [
+          { "name": "department", "label": "Departments", "fieldLayout": "paragraphs", "relationTo": "office", "fields": [ { "name": "title", "type": "title" }, { "name": "director", "type": "person" }, { "name": "responsibilities", "type": "text" }, { "name": "location", "type": "place" }, { "name": "contactReference", "type": "text", "optional": true } ] },
+          { "name": "office", "label": "Public Offices", "fieldLayout": "mixed", "fields": [ { "name": "title", "type": "title" }, { "name": "address", "type": "address" }, { "name": "openingHours", "type": "text" }, { "name": "services", "type": "text" }, { "name": "accessibility", "type": "text", "optional": true } ] }
+        ],
+        "noise": { "level": "clean" }
+      }
+    }
+  ]
+}

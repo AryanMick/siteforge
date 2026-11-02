@@ -1,0 +1,66 @@
+.archive-record { display: grid; grid-template-columns: minmax(0, 1fr) minmax(190px, 270px); gap: 34px; align-items: start; }
+.archive-aside { min-width: 0; }
+.archive-aside .visual { max-width: 210px; }
+.archive-aside .section-heading { margin-top: 24px; }
+.archive-aside .link-list { grid-template-columns: 1fr; }
+.archive-aside .link-list a { min-height: 0; padding: 11px 12px; font-size: 0.9rem; }
+.record-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; list-style: none; margin: 0; padding: 0; }
+.record-cards li { min-width: 0; padding: 16px; border: 1px solid var(--line); background: var(--paper); }
+.repeated-records a { font-weight: 700; overflow-wrap: anywhere; }
+.repeated-records p { margin: 7px 0 0; font-size: 0.87rem; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
+.repeated-records p strong { color: var(--muted); margin-right: 5px; }
+.directory-table.repeated-records td { padding: 14px 10px; }
+
+.shell-directory .site-header { border-top-width: 9px; box-shadow: none; }
+.shell-directory .header-inner { align-items: flex-start; flex-direction: column; gap: 0; padding-block: 20px 0; }
+.shell-directory .site-name { font-family: Georgia, "Times New Roman", serif; font-size: 1.65rem; }
+.shell-directory .site-nav { width: 100%; border-top: 1px solid var(--line); }
+.shell-directory .page-heading { border-bottom: 1px solid var(--line); }
+.shell-directory .section-heading { border-bottom: 2px solid var(--accent); padding-bottom: 8px; }
+
+.shell-archive { --paper: #f8f9f6; --wash: #e8ece7; --line: #b8c2bc; }
+.shell-archive .site-header { border-top: 0; border-bottom: 1px solid #6d786f; box-shadow: none; }
+.shell-archive .header-inner { display: grid; grid-template-columns: minmax(175px, 250px) 1fr; gap: 20px; min-height: 0; }
+.shell-archive .site-name { align-self: stretch; display: flex; align-items: center; padding: 20px 16px; color: #fff; background: #304d42; font: 700 1.35rem Georgia, "Times New Roman", serif; }
+.shell-archive .site-nav ul { gap: 0 20px; }
+.shell-archive .page-shell { max-width: 1050px; border-left: 1px solid var(--line); padding-left: 32px; }
+.shell-archive .breadcrumb { text-transform: uppercase; font-size: 0.72rem; }
+.shell-archive h1 { font-size: 2.6rem; }
+.shell-archive .visual { background: #e0e6df; }
+
+.shell-journal .site-header { border-top: 0; border-bottom: 1px solid var(--line); background: var(--paper); box-shadow: none; }
+.shell-journal .header-inner { min-height: 0; flex-direction: column; gap: 0; padding-top: 26px; }
+.shell-journal .site-name { font: 700 2rem Georgia, "Times New Roman", serif; text-align: center; }
+.shell-journal .site-nav ul { justify-content: center; }
+.shell-journal .page-shell { max-width: 1040px; }
+.shell-journal .page-heading { border-bottom: 0; text-align: center; margin-inline: auto; }
+.shell-journal .breadcrumb { text-align: center; }
+.shell-journal .kicker { letter-spacing: 0.08em; }
+.shell-journal .section-heading { text-align: center; }
+.shell-journal .field-list { border-top: 2px solid var(--ink); }
+
+.shell-civic .site-header { border-top: 0; border-bottom: 5px solid #50b6a3; background: #123e48; box-shadow: none; }
+.shell-civic .header-inner { min-height: 100px; }
+.shell-civic .site-name, .shell-civic .site-nav a { color: #fff; }
+.shell-civic .site-nav a[aria-current="page"] { color: #fff; box-shadow: inset 0 -3px #6ed2b9; }
+.shell-civic .page-shell { width: min(1200px, calc(100% - 40px)); }
+.shell-civic .page-heading { max-width: none; padding: 18px 0 28px; border-bottom: 4px solid #50b6a3; }
+.shell-civic h1 { font-family: Inter, ui-sans-serif, system-ui, sans-serif; font-size: 2.7rem; }
+.shell-civic .kicker { color: #146d6a; }
+.shell-civic .link-list { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+
+@media (max-width: 720px) {
+  .archive-record { grid-template-columns: 1fr; }
+  .shell-archive .header-inner { grid-template-columns: 1fr; gap: 0; padding: 0; }
+  .shell-archive .site-name { padding: 15px; }
+  .shell-archive .site-nav { padding: 0 12px; }
+  .shell-archive .page-shell { border-left: 0; padding-left: 0; }
+  .shell-archive h1 { font-size: 2.05rem; }
+  .shell-directory .header-inner, .shell-journal .header-inner { align-items: stretch; }
+  .shell-journal .site-name { text-align: left; }
+  .shell-journal .page-heading, .shell-journal .breadcrumb { text-align: left; }
+  .shell-civic .header-inner { min-height: 0; }
+  .shell-civic .page-shell { width: min(100% - 28px, 1200px); }
+  .shell-civic .link-list { grid-template-columns: 1fr; }
+  .shell-civic h1 { font-size: 2.1rem; }
+}

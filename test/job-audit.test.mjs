@@ -1,0 +1,64 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { randomUUID } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
+import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
+import { generate } from '../src/generator.mjs';
+import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
+import { siteHostname } from '../src/fixture-lab/gateway.mjs';
+import { publishSiteHandoff } from '../src/fixture-lab/handoff.mjs';
+
+test('job audit verifies generated answers and detects changed public bytes', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'siteforge-audit-'));
+  const previous = process.env.FIXTURE_LAB_DATA_DIR;
+  process.env.FIXTURE_LAB_DATA_DIR = root;
+  try {
+    const id = randomUUID();
+    const config = validateFixtureInput({ name: 'Audit test', siteCount: 1, pagesPerSite: 5, seed: 27 });
+    const plan = sitePlan(config, 0);
+    const jobRoot = join(root, 'jobs', id);
+    const siteRoot = join(jobRoot, 'sites', plan.id);
+    await mkdir(join(jobRoot, 'sites'), { recursive: true });
+    await generate(plan.config, siteRoot);
+    await writeFile(join(jobRoot, 'job.json'), JSON.stringify({ id, status: 'completed', config, completedSites: 1, totalPages: 5, sites: [plan.summary] }));
+    await writeFile(join(jobRoot, 'hosts.txt'), `127.0.0.1 ${siteHostname(plan.id)}\n`);
+    const evidencePath = join(root, 'evidence.json');
+    const run = () => execFileSync(process.execPath, ['scripts/audit-fixture-job.mjs', id, evidencePath], { cwd: resolve('.'), env: { ...process.env, FIXTURE_LAB_DATA_DIR: root }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    run();
+    assert.equal(JSON.parse(await readFile(evidencePath, 'utf8')).status, 'passed');
+    await writeFile(join(jobRoot, 'hosts.txt'), 'tampered historical mapping\n');
+    assert.throws(run, /Saved batch hosts mapping was changed/);
+    await rm(join(jobRoot, 'hosts.txt'));
+    const handoff = await publishSiteHandoff(id, plan.id);
+    await writeFile(join(jobRoot, 'job.json'), JSON.stringify({ id, status: 'completed', config, completedSites: 1, totalPages: 5, sites: [{ ...plan.summary, handoff: { version: 1, status: 'ready', directory: join(jobRoot, 'handoff', siteHostname(plan.id)) } }] }));
+    run();
+    assert.equal(JSON.parse(await readFile(evidencePath, 'utf8')).status, 'passed');
+    const copiedAnswer = join(handoff, 'answer-key.json');
+    const originalAnswer = await readFile(copiedAnswer);
+    await writeFile(copiedAnswer, '{}');
+    assert.throws(run);
+    assert.match(JSON.parse(await readFile(evidencePath, 'utf8')).failures[0].message, /handoff digest mismatch/);
+    await writeFile(copiedAnswer, originalAnswer);
+    await writeFile(join(handoff, 'unexpected.txt'), 'extra');
+    assert.throws(run);
+    assert.match(JSON.parse(await readFile(evidencePath, 'utf8')).failures[0].message, /Unexpected evaluator/);
+    await rm(join(handoff, 'unexpected.txt'));
+    const chunkPath = join(siteRoot, 'private', 'answer-pages', '0.json');
+    const originalChunk = await readFile(chunkPath);
+    await writeFile(chunkPath, '[]');
+    assert.throws(run);
+    assert.match(JSON.parse(await readFile(evidencePath, 'utf8')).failures[0].message, /inspector page chunk/);
+    await writeFile(chunkPath, originalChunk);
+    await writeFile(join(siteRoot, 'public', 'index.html'), '<h1>Changed after generation</h1>');
+    assert.throws(run);
+    const failed = JSON.parse(await readFile(evidencePath, 'utf8'));
+    assert.equal(failed.status, 'failed');
+    assert.match(failed.failures[0].message, /Public file digest mismatch/);
+  } finally {
+    if (previous === undefined) delete process.env.FIXTURE_LAB_DATA_DIR;
+    else process.env.FIXTURE_LAB_DATA_DIR = previous;
+    await rm(root, { recursive: true, force: true });
+  }
+});

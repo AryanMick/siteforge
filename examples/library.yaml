@@ -1,0 +1,13 @@
+version: 1
+seed: 48291
+site:
+  id: northstar-library
+  name: Northstar Public Library
+  domain: library
+  framework: html
+  visualStyle: modern
+  pageCount: 500
+  pageSize: 24
+  baseUrl: http://127.0.0.1:4310
+noise:
+  level: clean

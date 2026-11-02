@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "tool": "example-tool 0.1",
+  "schemas": {
+    "book": ["title", "author", "publicationDate", "isbn", "summary"]
+  },
+  "pages": [
+    {
+      "url": "/books/",
+      "cluster": "listing-a",
+      "contentType": "listing",
+      "fields": { "title": "Books" },
+      "repeatedItems": [
+        { "url": "/books/000001-meadow-and-map/", "fields": { "title": "Meadow and Map", "author": "Rogers Predovic" } }
+      ]
+    },
+    {
+      "url": "/books/000001-meadow-and-map/",
+      "cluster": "group-7",
+      "contentType": "book",
+      "fields": {
+        "title": "Meadow and Map",
+        "author": "Rogers Predovic",
+        "publicationDate": "January 1, 2020",
+        "isbn": "978-0-08-449793-4"
+      },
+      "relationships": [
+        { "type": "author", "targetUrl": "/authors/000001-rogers-predovic/" }
+      ]
+    }
+  ]
+}

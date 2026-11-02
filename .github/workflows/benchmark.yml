@@ -1,0 +1,86 @@
+name: Synthetic benchmark
+permissions:
+  contents: read
+concurrency:
+  group: benchmark-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      catalog:
+        description: Generate and verify 1440 legacy HTTP/HTTPS scenario websites
+        type: boolean
+        default: false
+      scale:
+        description: Generate 200 sites and 50000 pages
+        type: boolean
+        default: false
+      public_samples:
+        description: Run 3-page samples on Books to Scrape and Quotes to Scrape
+        type: boolean
+        default: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: .cache/browsers
+      NEXT_TELEMETRY_DISABLED: '1'
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run test:workbench
+      - run: npm run test:pagepilot
+      - run: npm run test:generator-api
+      - run: npm run test:bdd
+      - run: npm run test:mutation
+      - run: npm run test:mutation:generator
+      - run: npm run test:mutation:repeated
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - run: npm run pagepilot -- --background --production
+      - run: npm run test:pagepilot-ui
+      - run: npm run test:generator-recovery
+      - run: npm run test:generator-navigation
+      - run: npm run test:generator-redesign
+      - run: npm run test:catalog-ui
+      - run: node scripts/check-random-ui.mjs
+      - run: npm run test:ui
+      - run: npm run test:browser
+      - run: npm run test:field-locations
+      - run: npm run test:cms-markup
+      - run: npm run test:link-noise
+      - run: npm run test:base-relative
+      - run: npm run test:preview-rebase
+      - run: npm run test:legacy-browser
+      - name: Optional public URL workflow
+        if: github.event_name == 'workflow_dispatch' && inputs.public_samples
+        run: npm run test:public-sites
+      - run: npm run study:references -- --out outputs/ci-references
+      - run: npm run test:reference-browser -- --out outputs/ci-references
+      - run: node src/cli.mjs run examples/library.yaml --pages 100 --out outputs/ci-pilot
+      - if: inputs.scale
+        run: npm run benchmark:scale
+      - name: Full controlled regression catalog
+        if: github.event_name == 'workflow_dispatch' && inputs.catalog
+        run: npm run catalog:run
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: benchmark-evidence
+          path: |
+            outputs/
+            reports/
+          retention-days: 7

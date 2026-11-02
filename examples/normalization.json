@@ -1,0 +1,12 @@
+{
+  "contentTypeMap": {
+    "books": "book",
+    "writers": "author"
+  },
+  "fieldNameMap": {
+    "published": "publicationDate",
+    "writer": "author"
+  },
+  "dateFields": ["publicationDate", "startDate"],
+  "dropQueryParams": ["utm_source", "utm_medium", "utm_campaign"]
+}
