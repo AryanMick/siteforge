@@ -11,7 +11,7 @@ import { buildCatalogSiteConfig, CATALOG_SETTINGS, CATALOG_VERSION, listCatalogC
 import { getJob, siteDirectory, validUuid } from '../../src/fixture-lab/store.mjs';
 import { createModel } from '../../src/site/model.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../../src/noise/noise.mjs';
-import { finalizePage, renderPage } from '../../src/pages/renderers.mjs';
+import { finalizePage, renderPage } from '../../src/render/renderers.mjs';
 import { buildTransportPlan } from '../../src/noise/transport.mjs';
 import { attr, hash, textContent, walk } from '../../src/site/util.mjs';
 

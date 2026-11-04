@@ -3,7 +3,7 @@ import { Given, When, Then, type World } from '@cucumber/cucumber';
 import * as parse5 from 'parse5';
 import { validateConfig } from '../../src/site/config.mjs';
 import { createModel } from '../../src/site/model.mjs';
-import { renderPage } from '../../src/pages/renderers.mjs';
+import { renderPage } from '../../src/render/renderers.mjs';
 
 type CmsNode = { tagName?: string; value?: string; attrs?: { name: string; value: string }[];
   childNodes?: CmsNode[]; parentNode?: CmsNode };

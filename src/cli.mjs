@@ -24,8 +24,13 @@ node src/cli.mjs crawl http://127.0.0.1:4310 --mode browser --out outputs/actual
 node src/cli.mjs evaluate --truth outputs/library/private/ground-truth.json --actual outputs/actual.json --out outputs/report
 node src/cli.mjs run examples/library.yaml --out outputs/run
 node src/cli.mjs batch examples/suite.yaml --out outputs/suite
+node src/cli.mjs wordpress push outputs/library [--url http://127.0.0.1:9400] [--token T] [--builder blocks|elementor] [--front-page]
+node src/cli.mjs wordpress inspect [--url ... --token ...] [--site outputs/library]
+node src/cli.mjs wordpress reset outputs/library [--url ... --token ...]
 
 Overrides: --pages N --framework html|react|angular --noise clean|low|medium|high|custom
+WordPress: without --url/--token the connection in .wordpress/connection.json is used; --no-reuse always creates
+  new post types, --no-home skips the Home page, --status FILE writes progress JSON there.
 Crawl: --mode http|browser --strategy fields|structure --max-pages N --wait-ms N
 Evaluation: --options path/to/normalization.json; --min-coverage 0..1 exits 2 on regression
 Generation preserves existing directories. Answers exist only under private/.`;
@@ -49,10 +54,53 @@ async function createNewDirectory(path) {
   }
 }
 
+// wordpress push|inspect|reset: SiteForge content into a real WordPress through the SiteForge Importer plugin.
+async function wordpressCommand([action, target], v) {
+  const { pushSiteToWordPress, resetSiteInWordPress, loadSite } = await import('./wordpress/push.mjs');
+  const { inspectWordPress } = await import('./wordpress/inspect.mjs');
+  const { connect } = await import('./wordpress/client.mjs');
+  const { rename } = await import('node:fs/promises');
+  const atomicJson = async (path, value) => { const temporary = `${path}.${process.pid}.tmp`; await writeFile(temporary, json(value), { mode: 0o600 }); await rename(temporary, path); };
+  const connection = { url: v.url, token: v.token };
+  if (action === 'inspect') {
+    const { client } = await connect(connection);
+    const siteTypes = v.site ? (await loadSite(v.site)).types : undefined;
+    const summary = await inspectWordPress(client, { siteTypes });
+    console.log(summary.text); return;
+  }
+  if (!target) throw new Error(`wordpress ${action ?? ''} requires a generated site directory`.replace('  ', ' '));
+  if (action === 'reset') {
+    const result = await resetSiteInWordPress(target, connection);
+    console.log(`Deleted ${result.deleted} items of ${result.siteId}${result.removedTypes.length ? `; removed content types ${result.removedTypes.join(', ')}` : ''}.`); return;
+  }
+  if (action !== 'push') throw new Error('wordpress commands: push <site-dir>, inspect, reset <site-dir>');
+  if (v.builder && !['blocks', 'elementor'].includes(v.builder)) throw new Error('--builder must be blocks or elementor');
+  // --status FILE: progress for the app (state queued/running/done/failed), rewritten atomically.
+  const status = { state: 'running', pid: process.pid, siteDir: resolve(target), builder: v.builder ?? 'blocks', frontPage: Boolean(v['front-page']), startedAt: new Date().toISOString(), progress: null, summary: null, error: null };
+  const save = async () => { if (v.status) await atomicJson(v.status, { ...status, updatedAt: new Date().toISOString() }); };
+  await save();
+  let last = 0;
+  try {
+    const summary = await pushSiteToWordPress(target, { ...connection, builder: v.builder ?? 'blocks', setFrontPage: Boolean(v['front-page']), homePage: !v['no-home'], reuseExisting: !v['no-reuse'],
+      onProgress: async event => {
+        status.progress = event;
+        if (Date.now() - last > 500 || event.phase === 'done') { last = Date.now(); await save(); }
+        if (!v.status && process.stderr.isTTY) process.stderr.write(`\r${event.phase} ${event.done ?? ''}/${event.total ?? ''}   `);
+      } });
+    Object.assign(status, { state: 'done', summary, finishedAt: new Date().toISOString() }); await save();
+    if (!v.status && process.stderr.isTTY) process.stderr.write('\n');
+    console.log(json(summary));
+  } catch (error) {
+    Object.assign(status, { state: 'failed', error: error.message, finishedAt: new Date().toISOString() }); await save();
+    throw error;
+  }
+}
+
 export async function main(argv = process.argv.slice(2)) {
-  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms'].map(k=>[k,{type:'string'}]).concat([['help',{type:'boolean'}]])) });
+  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
   const command = p[0];
   if (!command || v.help) { console.log(help); return; }
+  if (command === 'wordpress') { await wordpressCommand(p.slice(1), v); return; }
   if (command === 'presets') {
     if (!v.out) throw new Error('presets requires --out');
     for (const [i,d] of DOMAINS.entries()) await writeNew(join(v.out,`${d}.yaml`),stringify(presetConfig(d,i)));

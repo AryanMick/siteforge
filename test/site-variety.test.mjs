@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import * as parse5 from 'parse5';
 import { createModel } from '../src/site/model.mjs';
 import { validateConfig } from '../src/site/config.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { siteLook, contrast } from '../src/pages/site-look.mjs';
+import { siteLook, contrast } from '../src/render/site-look.mjs';
 import { DOMAINS } from '../src/site/presets.mjs';
 import { walk, attr } from '../src/site/util.mjs';
 

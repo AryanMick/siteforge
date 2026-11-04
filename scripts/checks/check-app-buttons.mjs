@@ -79,7 +79,8 @@ try {
 
   const previewButton = page.getByRole('button', { name: /^(Preview|Restart preview for) / }).first();
   await previewButton.click();
-  const open = page.getByRole('link', { name: /^Open / }).first();
+  // The website row's own link (the Real WordPress panel has "Open site" and "Open /wp-admin" links too).
+  const open = page.getByTestId('generated-site').first().getByRole('link', { name: /^Open / }).first();
   await open.waitFor({ timeout: 30000 });
   const siteUrl = await open.getAttribute('href');
   assert.equal((await page.request.get(siteUrl)).status(), 200);

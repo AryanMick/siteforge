@@ -7,7 +7,7 @@ import { validateConfig } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { applyDataNoise } from '../src/noise/noise.mjs';
 import { applyHtmlNoise } from '../src/noise/noise.mjs';
-import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { renderPage, finalizePage } from '../src/render/renderers.mjs';
 import { parse } from 'parse5';
 import { walk } from '../src/site/util.mjs';
 

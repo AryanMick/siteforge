@@ -6,7 +6,7 @@ import { applyDataNoise } from '../src/noise/noise.mjs';
 import { planRepeatedItemLocations } from '../src/answers/repeated-item-locations.mjs';
 import { validateAnswerKey } from '../src/answers/answer-key.mjs';
 import { buildTransportPlan } from '../src/noise/transport.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 
 const schema = [
   { name: 'publicationDate', type: 'date', optional: false },

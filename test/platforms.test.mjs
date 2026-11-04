@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import * as parse5 from 'parse5';
 import { generate } from '../src/site/generator.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { PLATFORM_PROFILES, platformHeaders } from '../src/pages/platforms.mjs';
+import { PLATFORM_PROFILES, platformHeaders } from '../src/render/platforms.mjs';
 import { walk, attr } from '../src/site/util.mjs';
 
 const FINGERPRINTS = {

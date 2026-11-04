@@ -395,3 +395,23 @@ label.iconButton { cursor: pointer; position: relative; }
 .scoreBox dd { margin: 0; font-weight: 600; }
 .scoreBox a { color: #1f5fbf; }
 .scoreError { color: #a42d31; border-color: #e3b5b7; background: #fff7f7; overflow-wrap: anywhere; }
+
+/* Real WordPress panel (2026-11-04) */
+.wpPanel { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; margin: 0 0 18px; background: #fbfbfd; display: grid; gap: 10px; }
+.wpHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.wpHead > div:first-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; }
+.wpHead strong { font-size: 14px; }
+.wpState { font-size: 12px; color: var(--secondary); }
+.wpState[data-state="running"] { color: #1d7a3a; font-weight: 600; }
+.wpState[data-state="failed"] { color: #a42d31; }
+.wpActions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.wpHelp { margin: 0; font-size: 12px; line-height: 1.5; color: #3a3a40; }
+.wpHelp code, .wpTypes code { font-size: 11px; background: #eef0f4; padding: 1px 4px; border-radius: 3px; }
+.wpError { margin: 0; font-size: 12px; color: #a42d31; overflow-wrap: anywhere; }
+.wpOptions { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: flex-start; }
+.wpOptions .field { min-width: 260px; }
+.wpTypes { font-size: 12px; }
+.wpTypes summary { display: inline-flex; align-items: center; gap: 6px; color: var(--blue); cursor: pointer; font-weight: 550; list-style: none; padding-top: 22px; }
+.wpTypes summary::-webkit-details-marker { display: none; }
+.wpTypes ul { margin: 8px 0; padding-left: 18px; display: grid; gap: 4px; }
+@media (max-width: 720px) { .wpOptions .field { min-width: 0; width: 100%; } }

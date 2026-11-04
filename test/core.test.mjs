@@ -14,7 +14,7 @@ import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
 import { generate, listFiles } from '../src/site/generator.mjs';
 import { serve } from '../src/preview/server.mjs';
 import { crawl, extractPublicPage } from '../src/crawl/crawler.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { walk, textContent, hash } from '../src/site/util.mjs';
 
 const execFileAsync = promisify(execFile);

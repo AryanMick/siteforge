@@ -9,7 +9,7 @@ import { validateFixtureInput, sitePlan } from '../src/fixture-lab/config.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { validateAnswerKey } from '../src/answers/answer-key.mjs';
 import { generate } from '../src/site/generator.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { serve } from '../src/preview/server.mjs';
 import { buildTransportPlan } from '../src/noise/transport.mjs';
 import { textContent, walk } from '../src/site/util.mjs';

@@ -1,5 +1,5 @@
 import { gzipSync } from 'node:zlib';
-import { PLATFORM_PROFILES, platformHeaders } from '../pages/platforms.mjs';
+import { PLATFORM_PROFILES, platformHeaders } from '../render/platforms.mjs';
 import { createServer as createHttpServer } from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
 import { readFile, stat, realpath } from 'node:fs/promises';

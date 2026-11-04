@@ -191,7 +191,7 @@ function homeExtras(site) {
 const homeContext = (site, page, image, fields) => ({ esc: escapeHtml, href: path => siteHref(site, page, path), image, fields, links: pageLinks(page), chrome: chromeFor(site) });
 
 function renderHome(site, page, image, fields) {
-  // Full per-domain front pages (src/pages/home-pages.mjs); the block layout below remains the fallback.
+  // Full per-domain front pages (src/render/home-pages.mjs); the block layout below remains the fallback.
   const full = renderHomePage(site, page, homeContext(site, page, image, fields));
   if (full) return full;
   const copy = HOME_COPY[site.domain];
@@ -241,7 +241,7 @@ function renderHome(site, page, image, fields) {
 const usesInnerLayouts = (site, page) => site.visualStyle !== 'legacy' && Boolean(CHROME[site.domain]) && (page.kind === 'detail' || page.kind === 'listing');
 
 function renderBody(site, page, image) {
-  // Drupal listings are Views pages with working facets, sorts, tabs and pager (src/pages/drupal-views.mjs).
+  // Drupal listings are Views pages with working facets, sorts, tabs and pager (src/render/drupal-views.mjs).
   if (site.cmsProfile === 'drupal' && page.kind === 'listing') return renderDrupalListing(site, page, { href: path => siteHref(site, page, path), theme: drupalTheme(site) });
   const fields = page.kind === 'listing' && site.shell ? '' : renderFields(page);
   if (page.kind === 'home' && HOME_COPY[site.domain] && site.visualStyle !== 'legacy') return renderHome(site, page, image, fields);
@@ -251,7 +251,7 @@ function renderBody(site, page, image) {
     const section = (site.navigation ?? []).find(item => item.href !== '/' && String(page.url).startsWith(item.href));
     const parts = { fields, related, image, esc: escapeHtml, typeLabel: TYPE_LABELS[page.contentType] ?? humanize(page.contentType), sectionLabel: section?.label ?? page.title, siteName: site.name };
     if (page.kind !== 'detail') return renderListingVariant(site, page, parts);
-    // Prose sections about the record (src/pages/record-furniture.mjs) follow the page design's own widgets.
+    // Prose sections about the record (src/render/record-furniture.mjs) follow the page design's own widgets.
     return `${renderDetailVariant(site, page, parts)}<div class="rf-after">${detailFurniture(site, page, { esc: escapeHtml, typeLabel: publicTypeLabel(site, page) }).body}</div>`;
   }
   if (page.kind === 'listing') {
@@ -628,7 +628,7 @@ function renderHeader(site, page) {
           <button type="submit" class="search-submit">Search</button>
         </form>`;
   // The link keeps its section page (the crawlable link graph is unchanged); site-actions.js sends a click on a
-  // sign-in, request or search label to that page instead (src/pages/browser/site-actions.js).
+  // sign-in, request or search label to that page instead (src/render/browser/site-actions.js).
   const cta = chrome.cta ? `<a class="header-cta" href="${siteHref(site, page, navHref(site, chrome.cta[1]))}">${escapeHtml(chrome.cta[0])}</a>` : '';
   const variant = CHROME_OPTIONS[site.domain] ? ` header-v-${chrome.header}` : '';
   const headerAttrs = platformHeaderAttrs(site, variant) ?? (site.cmsProfile === 'drupal' ? ` id="header" class="site-header${variant}" data-drupal-selector="site-header" role="banner"`
@@ -758,7 +758,7 @@ function documentHtml(site, page, main) {
 }
 
 // A site page outside the answer key (search results, my list, sign-in, request forms): the site's own header and
-// footer around `body`, marked noindex. Used by generator.mjs for the pages in src/pages/site-runtime.mjs.
+// footer around `body`, marked noindex. Used by generator.mjs for the pages in src/render/site-runtime.mjs.
 export function renderUtilityPage(site, { path, title, body }) {
   assertSupported(site);
   // Without the per-page source clutter (inline CSS, tracking blocks): these pages only need the header and footer.

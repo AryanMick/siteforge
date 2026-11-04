@@ -4,8 +4,8 @@ import { resolve, join, dirname, sep } from 'node:path';
 import { validateConfig } from './config.mjs';
 import { createModel } from './model.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../noise/noise.mjs';
-import { renderPage, finalizePage, prepareAssets, renderUtilityPage } from '../pages/renderers.mjs';
-import { searchIndexScript, SEARCH_INDEX_ASSET, utilityPageSpecs } from '../pages/site-runtime.mjs';
+import { renderPage, finalizePage, prepareAssets, renderUtilityPage } from '../render/renderers.mjs';
+import { searchIndexScript, SEARCH_INDEX_ASSET, utilityPageSpecs } from '../render/site-runtime.mjs';
 import { VERSION, hash, json, escapeHtml } from './util.mjs';
 import { listFiles } from './artifact-files.mjs';
 import { buildTransportPlan } from '../noise/transport.mjs';
@@ -14,8 +14,8 @@ import { hashJson, writeJsonArtifact } from './json-artifacts.mjs';
 import { writeAnswerInspection } from '../fixture-lab/answer-inspection.mjs';
 import { readFileSync, existsSync } from 'node:fs';
 import { trapArtifacts } from '../noise/crawler-traps.mjs';
-import { isPlatform, platformRobots } from '../pages/platforms.mjs';
-import { bindDrupalViews, drupalViewsArtifacts } from '../pages/drupal-views.mjs';
+import { isPlatform, platformRobots } from '../render/platforms.mjs';
+import { bindDrupalViews, drupalViewsArtifacts } from '../render/drupal-views.mjs';
 export { listFiles } from './artifact-files.mjs';
 
 async function ensureNewOutput(path) {

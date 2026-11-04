@@ -8,6 +8,7 @@ outputs/
 .workbench/
 .pagepilot/
 .fixture-lab/
+.wordpress/
 .stryker-tmp/
 reports/
 *.tsbuildinfo

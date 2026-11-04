@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { parse } from 'parse5';
 import { createModel } from '../src/site/model.mjs';
 import { validateConfig } from '../src/site/config.mjs';
-import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { renderPage, finalizePage } from '../src/render/renderers.mjs';
 import { attr, normalizeSourceText, walk } from '../src/site/util.mjs';
 
 const textContent = node => node.nodeName === '#text' ? node.value : (node.childNodes || []).map(textContent).join('');

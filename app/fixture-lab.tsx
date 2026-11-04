@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
-import { ArrowDownToLine, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Copy, FileCheck2, FileJson, Gauge, Globe2, Layers3, ListChecks, LoaderCircle, LockKeyhole, Package, Play, RefreshCw, Search, ShieldCheck, Shuffle, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpRight, Boxes, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Copy, FileCheck2, FileJson, Gauge, Globe2, Layers3, ListChecks, LoaderCircle, LockKeyhole, Package, Play, RefreshCw, Search, ShieldCheck, Shuffle, SlidersHorizontal, Trash2, Upload, Power, LayoutDashboard } from 'lucide-react';
 import { OBSTACLE_CATALOG, TRANSPORT_CATALOG, LEGACY_SERVER_CATALOG, SCENARIO_LABELS, TRANSPORT_LABELS } from '../src/fixture-lab/catalog.mjs';
 
 const RESPONSE_CATALOG = [...TRANSPORT_CATALOG, ...LEGACY_SERVER_CATALOG];
@@ -78,6 +78,12 @@ export function FixtureLab() {
   // Scores of uploaded tool results, per job/site (2026-11-02); the answer key stays on the server.
   const [scores, setScores] = useState<Record<string, { busy?: boolean; error?: string; report?: ScoreReport; file?: string }>>({});
   const [copied, setCopied] = useState('');
+  // Real WordPress on this computer (2026-11-04): the local runtime's status, the page builder for pushes, and each
+  // site's push status. The content goes into WordPress as native posts; the active WordPress theme renders it.
+  const [wordpress, setWordpress] = useState<WpRuntime | null>(null);
+  const [wpBusy, setWpBusy] = useState(false);
+  const [wpBuilder, setWpBuilder] = useState<'blocks' | 'elementor'>('blocks');
+  const [wpPushes, setWpPushes] = useState<Record<string, WpPush>>({});
   const [siteQuery, setSiteQuery] = useState('');
   const [sitePage, setSitePage] = useState(0);
   const [freshSeed, setFreshSeed] = useState(true);
@@ -102,6 +108,12 @@ export function FixtureLab() {
   const diskBytes = (pages: number) => config.siteCount * (realisticSource ? 1_000_000 : 450_000) + pages * (realisticSource ? 92_000 : 27_000);
   const disk = (bytes: number) => bytes >= 1e9 ? `${(bytes / 1e9).toFixed(1)} GB` : `${Math.max(1, Math.round(bytes / 1e6))} MB`;
   const active = jobs.some(job => job.status === 'running') || selectedJob?.status === 'running';
+  const selectedSiteIds = selectedJob?.sites.slice(0, 25).map(site => site.id).join(',') ?? '';
+  useEffect(() => {
+    if (!selectedJob || !selectedSiteIds) return;
+    for (const siteId of selectedSiteIds.split(',')) void refreshPush(selectedJob.id, siteId);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedJob?.id, selectedSiteIds]);
   // Random sizes share the 100,000-page budget, so only fixed sizes can exceed it.
   const overLimit = !randomPages && totalPages > 100000;
   const validPages = Number.isInteger(config.pagesPerSite) && (zeroPages || (config.pagesPerSite >= 5 && config.pagesPerSite <= 100000));
@@ -153,6 +165,13 @@ export function FixtureLab() {
   function randomizeSettings() {
     setConfig(previous => ({ ...previous, randomPageCount: true, pagesPerSite: 100000, domain: 'random', framework: 'random', visualStyle: 'random', noise: 'random', challenge: 'random', fieldLayout: 'random', linkMode: 'random', cmsProfile: 'random', builderProfile: 'random', optionalFields: 'random', scenario: 'random', transport: 'random', previewProtocol: 'http' }));
   }
+
+  useEffect(() => { void refreshWordPress(); }, []);
+  useEffect(() => {
+    if (wordpress?.state !== 'starting') return;
+    const timer = setTimeout(() => void refreshWordPress(), 2000);
+    return () => clearTimeout(timer);
+  }, [wordpress]);
 
   useEffect(() => {
     const fromUrl = new URLSearchParams(window.location.search).get('job');
@@ -256,6 +275,37 @@ export function FixtureLab() {
       const { report } = await request<{ report: ScoreReport }>(`${siteBase(selectedJob.id, site.id)}/score`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(output) });
       setScores(previous => ({ ...previous, [key]: { report, file: file.name } }));
     } catch (failure) { setScores(previous => ({ ...previous, [key]: { error: (failure as Error).message, file: file.name } })); }
+  }
+  async function refreshWordPress() {
+    try { setWordpress(await request<WpRuntime>('/api/wordpress/runtime')); }
+    catch (failure) { setWordpress({ state: 'failed', error: (failure as Error).message }); }
+  }
+  async function toggleWordPress(action: 'start' | 'stop') {
+    setWpBusy(true);
+    try { setWordpress(await request<WpRuntime>('/api/wordpress/runtime', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })); }
+    catch (failure) { setWordpress(previous => ({ ...(previous ?? { state: 'failed' }), state: 'failed', error: (failure as Error).message })); }
+    finally { setWpBusy(false); }
+  }
+  async function refreshPush(jobId: string, siteId: string) {
+    try {
+      const { status } = await request<{ status: WpPush }>(`${siteBase(jobId, siteId)}/wordpress`);
+      setWpPushes(previous => ({ ...previous, [`${jobId}/${siteId}`]: status }));
+      return status;
+    } catch { return undefined; }
+  }
+  async function pushToWordPress(site: Site) {
+    if (!selectedJob) return;
+    const jobId = selectedJob.id;
+    const key = `${jobId}/${site.id}`;
+    setWpPushes(previous => ({ ...previous, [key]: { state: 'queued' } }));
+    try {
+      await request<{ status: WpPush }>(`${siteBase(jobId, site.id)}/wordpress`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ builder: wpBuilder }) });
+      for (let attempt = 0; attempt < 3600; attempt++) {
+        const status = await refreshPush(jobId, site.id);
+        if (status && (status.state === 'done' || status.state === 'failed')) break;
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+    } catch (failure) { setWpPushes(previous => ({ ...previous, [key]: { state: 'failed', error: (failure as Error).message } })); }
   }
   async function deleteJob() {
     if (!selectedId || deleting) return;
@@ -369,11 +419,12 @@ export function FixtureLab() {
               <div><span>Answer keys</span><strong>{format(job.sites.length)}</strong></div>
             </div>
             {job.status === 'running' && <div className={styles.progress} role="status"><progress aria-label="Generation progress" max={job.totalPages} value={generatedPages + (job.progress?.siteIndex === job.completedSites ? job.progress.completedPages : 0)} /><span>{job.progress?.phase === 'verifying' ? 'Verifying files' : job.progress?.phase === 'preparing-handoff' ? 'Preparing test package' : job.progress?.phase === 'preparing' ? 'Preparing source records' : 'Generating pages'} / Website {Math.min((job.progress?.siteIndex ?? job.completedSites) + 1, job.config.siteCount)} of {job.config.siteCount}</span></div>}
+            {job.status === 'completed' && <WordPressPanel runtime={wordpress} busy={wpBusy} builder={wpBuilder} setBuilder={setWpBuilder} onToggle={action => void toggleWordPress(action)} onRefresh={() => void refreshWordPress()} />}
             <div className={styles.tabs} role="group" aria-label="Test set views"><button type="button" aria-pressed={view === 'sites'} onClick={() => setView('sites')}><Globe2 size={16} />Websites</button><button type="button" aria-pressed={view === 'answers'} disabled={!job.sites.length} onClick={() => { setView('answers'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><FileCheck2 size={16} />Answer keys</button><button type="button" aria-pressed={view === 'coverage'} disabled={!job.sites.length} onClick={() => { setView('coverage'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><ListChecks size={16} />Coverage</button></div>
             {view === 'sites' ? <div className={styles.siteList}>
               {visibleSites.some(site => site.handoff?.status === 'ready') && <details className={styles.savedSettings}><summary>Local folders <ChevronDown size={15} /></summary><dl>{visibleSites.filter(site => site.handoff?.status === 'ready').map(site => <div key={site.id}><dt>{site.name}</dt><dd><code>{site.handoff!.directory}</code><button type="button" className={styles.iconButton} aria-label={`Copy folder for ${site.name}`} title="Copy folder path" onClick={() => void copy(site.handoff!.directory)}>{copied === site.handoff!.directory ? <Check size={14} /> : <Copy size={14} />}</button></dd></div>)}</dl></details>}
               {job.sites.length > 25 && <div className={styles.siteSearch}><Search size={16} /><input type="search" aria-label="Search generated websites" placeholder="Search cases, site types or technology" value={siteQuery} onChange={event => { setSiteQuery(event.target.value); setSitePage(0); }} /><span>{format(matchingSites.length)}</span></div>}
-              <p className={styles.outputLegend}><strong>Per website:</strong> ZIP = the website files for your crawler · JSON = the private answer key (keep it away from the tool under test) · WP / Drupal = a theme package that makes a real WordPress or Drupal serve the same pages with its own markup · Score = upload your tool's output (JSON) to see how well it matched the answer key</p>
+              <p className={styles.outputLegend}><strong>Per website:</strong> ZIP = the website files for your crawler · JSON = the private answer key (keep it away from the tool under test) · WP / Drupal = a theme package that makes a real WordPress or Drupal serve the same pages with its own markup · Score = upload your tool's output (JSON) to see how well it matched the answer key · Push = put the site's content into the real WordPress below as native WordPress content</p>
               <details className={styles.savedSettings}><summary>How to install the WordPress or Drupal download <ChevronDown size={15} /></summary><div className={styles.installHelp}>
                 <div><strong>WordPress</strong><ol><li>In wp-admin, go to Appearance → Themes → Add New → Upload Theme and choose the WP ZIP.</li><li>Activate it. The pages are imported (big sites finish as you open admin pages).</li><li>Crawl the WordPress site. URLs and fields match the answer key.</li></ol></div>
                 <div><strong>Drupal 10 or 11</strong><ol><li>If an earlier SiteForge site is installed, uninstall “SiteForge test content” first. Then unzip the Drupal ZIP into the Drupal web folder (the one with index.php).</li><li>Enable “SiteForge test content” on the Extend page. It imports the pages and switches the theme.</li><li>Crawl the Drupal site. URLs and fields match the answer key.</li></ol></div>
@@ -392,11 +443,13 @@ export function FixtureLab() {
                     <a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/download?kind=answers`} aria-label={`Download answer key JSON for ${site.name}`} title="Download answer key JSON"><FileJson size={17} /><span>JSON</span></a>
                     {site.pageCount <= 100000 && <><a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/download?kind=wordpress`} aria-label={`Download WordPress theme for ${site.name}`} title="WordPress theme ZIP: upload and activate it in a real WordPress, which then serves this site with its own WordPress markup"><Package size={17} /><span>WP</span></a>
                     <a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/download?kind=drupal`} aria-label={`Download Drupal theme for ${site.name}`} title="Drupal module and theme ZIP: unzip into a real Drupal web root and enable it; Drupal then serves this site with its own markup"><Package size={17} /><span>Drupal</span></a></>}
+                    <button className={styles.iconButton} type="button" disabled={wordpress?.state !== 'running' || ['queued', 'running'].includes(wpPushes[`${job.id}/${site.id}`]?.state ?? '')} onClick={() => void pushToWordPress(site)} aria-label={`Push ${site.name} into WordPress`} title={wordpress?.state === 'running' ? `Put this site's content into the local WordPress as real WordPress content (${wpBuilder === 'elementor' ? 'pages built with Elementor' : 'WordPress blocks'})` : 'Start WordPress first (Real WordPress panel above)'}><Upload size={17} /><span>Push</span></button>
                     <label className={styles.iconButton} title="Score a tool's output for this website (JSON in the format in examples/smartcite-output.schema.json)"><Gauge size={17} /><span>Score</span><input className={styles.visuallyHidden} type="file" accept="application/json,.json" aria-label={`Score a tool's output for ${site.name}`} onChange={event => { void scoreResult(site, event.target.files?.[0]); event.target.value = ''; }} /></label>
                     <button className={styles.iconButton} type="button" aria-label={`Inspect answers for ${site.name}`} title="Inspect private answer key" onClick={() => { setAnswerSite(site.id); setView('answers'); }}><FileCheck2 size={17} /></button>
                     {url?.startsWith('https:') && <a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/certificate`} aria-label={`Download test certificate for ${site.name}`} title="Download public test certificate"><ShieldCheck size={17} /></a>}
                   </div>
                   {scores[`${job.id}/${site.id}`] && <ScoreSummary state={scores[`${job.id}/${site.id}`]} siteName={site.name} />}
+                  {wpPushes[`${job.id}/${site.id}`] && wpPushes[`${job.id}/${site.id}`].state !== 'none' && <PushSummary state={wpPushes[`${job.id}/${site.id}`]} siteName={site.name} answersHref={`${siteBase(job.id, site.id)}/wordpress?kind=answers`} runtime={wordpress} />}
                 </article>;
               })}
               {!job.sites.length && <div className={styles.pending}>{job.status === 'running' ? 'Building the first website...' : 'No websites were completed.'}</div>}
@@ -515,3 +568,54 @@ function ScoreSummary({ state, siteName }: { state: { busy?: boolean; error?: st
   ];
   return <div className={styles.scoreBox} aria-label={`Score for ${siteName}`}><strong>Score for {state.file}</strong><dl>{items.map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{value}</dd></div>)}</dl><a href={download} download={`${siteName.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-score.json`}>Download the full report</a></div>;
 }
+
+type WpRuntime = { state: 'stopped' | 'starting' | 'running' | 'failed'; url?: string; adminUrl?: string; username?: string; password?: string; error?: string; logTail?: string };
+type WpPush = { state?: 'none' | 'queued' | 'running' | 'done' | 'failed'; progress?: { done?: number; total?: number; phase?: string } | null; summary?: { created?: number; updated?: number; unchanged?: number; records?: number; url?: string; adminUrl?: string; theme?: string | null; builder?: string; types?: { name: string; postType: string; reused?: boolean; label?: string; archiveUrl?: string }[] } | null; error?: string | null };
+type WpTypeInfo = { name?: string; label?: string; published?: number; registeredBy?: string; archiveUrl?: string };
+
+// The real WordPress on this computer (WordPress Playground: real WordPress and PHP running inside Node.js).
+function WordPressPanel({ runtime, busy, builder, setBuilder, onToggle, onRefresh }: { runtime: WpRuntime | null; busy: boolean; builder: 'blocks' | 'elementor'; setBuilder: (value: 'blocks' | 'elementor') => void; onToggle: (action: 'start' | 'stop') => void; onRefresh: () => void }) {
+  const [types, setTypes] = useState<{ loading?: boolean; error?: string; list?: WpTypeInfo[] } | null>(null);
+  const state = runtime?.state ?? 'stopped';
+  async function loadTypes() {
+    setTypes({ loading: true });
+    try {
+      const body = await request<{ contentTypes?: WpTypeInfo[] }>('/api/wordpress/types');
+      setTypes({ list: body.contentTypes ?? [] });
+    } catch (failure) { setTypes({ error: (failure as Error).message }); }
+  }
+  return <section className={styles.wpPanel} aria-label="Real WordPress">
+    <div className={styles.wpHead}>
+      <div><strong>Real WordPress</strong><span className={styles.wpState} data-state={state}>{state === 'running' ? 'Running' : state === 'starting' ? 'Starting… (the first start downloads WordPress and takes a minute)' : state === 'failed' ? 'Not running' : 'Stopped'}</span></div>
+      <div className={styles.wpActions}>
+        {state === 'running' && runtime?.url && <a className={styles.smallButton} href={runtime.url} target="_blank" rel="noreferrer"><ArrowUpRight size={15} />Open site</a>}
+        {state === 'running' && runtime?.adminUrl && <a className={styles.smallButton} href={runtime.adminUrl} target="_blank" rel="noreferrer"><LayoutDashboard size={15} />Open /wp-admin</a>}
+        <button className={styles.smallButton} type="button" disabled={busy || state === 'starting'} onClick={() => onToggle(state === 'running' ? 'stop' : 'start')}>{busy || state === 'starting' ? <LoaderCircle className={styles.spin} size={15} /> : <Power size={15} />}{state === 'running' ? 'Stop WordPress' : 'Start WordPress'}</button>
+        <button className={styles.iconButton} type="button" aria-label="Refresh WordPress status" title="Refresh status" onClick={onRefresh}><RefreshCw size={15} /></button>
+      </div>
+    </div>
+    <p className={styles.wpHelp}>Push puts a site's records into this WordPress as real content types (Books, Events, Exhibitions…) with their fields. WordPress and its active theme decide how they look. Each push also makes a WordPress answer key with WordPress's real addresses, for scoring a crawl of the WordPress site.{runtime?.username ? <> Log in as <code>{runtime.username}</code> / <code>{runtime.password}</code>.</> : null}</p>
+    {state === 'failed' && runtime?.error && <p className={styles.wpError} role="alert">{runtime.error}</p>}
+    <div className={styles.wpOptions}>
+      <label className={styles.field}>Build pages with<select value={builder} onChange={event => setBuilder(event.target.value as 'blocks' | 'elementor')}><option value="blocks">WordPress blocks (the theme's own layout)</option><option value="elementor">Elementor (real Elementor page builder)</option></select></label>
+      {state === 'running' && <details className={styles.wpTypes} onToggle={event => { if ((event.currentTarget as HTMLDetailsElement).open && !types) void loadTypes(); }}><summary><Boxes size={15} />Content types in this WordPress <ChevronDown size={15} /></summary>
+        {types?.loading ? <p><LoaderCircle className={styles.spin} size={14} /> Reading WordPress…</p> : types?.error ? <p className={styles.wpError}>{types.error}</p> : types?.list ? <ul>{types.list.map(type => <li key={type.name}><strong>{type.label ?? type.name}</strong> <code>{type.name}</code>{typeof type.published === 'number' ? ` · ${type.published} published` : ''} · {type.registeredBy === 'siteforge' ? 'added by SiteForge' : type.registeredBy === 'wordpress' ? 'built into WordPress' : 'from the theme or a plugin'}{type.archiveUrl ? <> · <a href={type.archiveUrl} target="_blank" rel="noreferrer">list page</a></> : null}</li>)}</ul> : null}
+        <button className={styles.smallButton} type="button" onClick={() => void loadTypes()}><RefreshCw size={14} />Read again</button>
+      </details>}
+    </div>
+  </section>;
+}
+
+function PushSummary({ state, siteName, answersHref, runtime }: { state: WpPush; siteName: string; answersHref: string; runtime: WpRuntime | null }) {
+  if (state.state === 'queued' || state.state === 'running') {
+    const done = state.progress?.done ?? 0; const total = state.progress?.total ?? 0;
+    return <div className={styles.scoreBox} role="status"><LoaderCircle className={styles.spin} size={15} />Pushing {siteName} into WordPress{total ? `: ${done} of ${total} records` : '…'}{state.progress?.phase ? ` (${state.progress.phase})` : ''}</div>;
+  }
+  if (state.state === 'failed') return <div className={`${styles.scoreBox} ${styles.scoreError}`} role="alert"><CircleAlert size={15} />WordPress push failed: {state.error ?? 'unknown error'}</div>;
+  const summary = state.summary ?? {};
+  const siteUrl = summary.url ?? runtime?.url; const adminUrl = summary.adminUrl ?? runtime?.adminUrl;
+  return <div className={styles.scoreBox} aria-label={`WordPress push for ${siteName}`}><strong>In WordPress{summary.theme ? ` (theme: ${summary.theme}, ${summary.builder === 'elementor' ? 'built with Elementor' : 'WordPress blocks'})` : ''}: {summary.created ?? 0} created, {summary.updated ?? 0} updated, {summary.unchanged ?? 0} unchanged</strong>
+    {summary.types?.length ? <span>Content types: {summary.types.map((type, index) => <span key={type.postType}>{index ? ', ' : ''}{type.archiveUrl ? <a href={type.archiveUrl} target="_blank" rel="noreferrer">{type.label ?? type.name}</a> : type.label ?? type.name}{type.reused ? ' (existing type)' : ''}</span>)}</span> : null}
+    {siteUrl && <a href={siteUrl} target="_blank" rel="noreferrer">Open the WordPress site</a>}{adminUrl && <a href={adminUrl} target="_blank" rel="noreferrer">Open /wp-admin</a>}<a href={answersHref}>WordPress answer key (JSON)</a></div>;
+}
+

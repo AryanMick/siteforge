@@ -5,7 +5,7 @@ import { parse } from 'parse5';
 import { validateConfig } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { walk } from '../src/site/util.mjs';
 
 const modes = ['root-relative', 'relative', 'absolute', 'mixed', 'base-relative'];

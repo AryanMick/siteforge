@@ -104,7 +104,7 @@ function selectedPluginsBuild(site) {
   return chosen;
 }
 
-// URL shapes the six platform profiles (src/pages/platforms.mjs) use for vendor assets, uploaded documents, component CSS
+// URL shapes the six platform profiles (src/render/platforms.mjs) use for vendor assets, uploaded documents, component CSS
 // and the staff sign-in page; null for WordPress, Drupal and plain sites.
 function platformPaths(site) {
   const slug = String(site.name ?? site.id ?? 'site').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'site';
@@ -570,7 +570,14 @@ export function bodyEndClutter(site, page, ctx) {
   out.push(stateBlob(site, page, ctx));
   const bp = bigPipe(site, page);
   if (bp.replacements) out.push(bp.replacements);
-  for (const [id, path, query] of localScripts(site)) out.push(`<script src="${ctx.href(path)}${query ? `?${query}` : ''}"${id ? ` id="${id}"` : ''}${r(site, 'defer', path) % 2 === 0 ? ' defer' : ''}></script>`);
+  // Scripts are listed in dependency order (jQuery before plugins, drupal.js before drupal.init.js), so once one is
+  // deferred every later one is deferred too: a blocking script never runs before a deferred one it needs (matrix
+  // check 2026-11-04: a blocking drupal.init.js after a deferred drupal.js threw "reading 'attachBehaviors'").
+  let deferred = false;
+  for (const [id, path, query] of localScripts(site)) {
+    deferred ||= r(site, 'defer', path) % 2 === 0;
+    out.push(`<script src="${ctx.href(path)}${query ? `?${query}` : ''}"${id ? ` id="${id}"` : ''}${deferred ? ' defer' : ''}></script>`);
+  }
   if (cms(site) === 'wordpress') {
     const seconds = 1 + r(site, page.pageId, 'cache') % 600;
     out.push(`<!--\n\tgenerated ${seconds} seconds ago\n\tgenerated in 0.${String(100 + r(site, page.pageId, 'gen') % 899)} seconds\n\tserved from page cache in 0.00${r(site, page.pageId, 'hit') % 9} seconds\n\tcached ${pick(site, ['by object cache', 'by edge cache', 'for great performance'], 'cache-kind')}\n-->`);

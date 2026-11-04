@@ -5,7 +5,7 @@ import { createModel } from '../src/site/model.mjs';
 import { validateConfig } from '../src/site/config.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
 import { DOMAINS } from '../src/site/presets.mjs';
-import { innerCss, innerLookClasses, renderDetailVariant, renderListingVariant } from '../src/pages/inner-layouts.mjs';
+import { innerCss, innerLookClasses, renderDetailVariant, renderListingVariant } from '../src/render/inner-layouts.mjs';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const FIELDS = '<dl class="field-list"><dt>Marker label</dt><dd>FIELD-MARKER-VALUE</dd></dl>';

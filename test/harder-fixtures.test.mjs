@@ -10,7 +10,7 @@ import { validateFixtureInput, sitePlan, FIXTURE_DOMAINS } from '../src/fixture-
 import { randomFixtureInput } from '../src/fixture-lab/random.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
-import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { renderPage, finalizePage } from '../src/render/renderers.mjs';
 import { buildTransportPlan } from '../src/noise/transport.mjs';
 import { validateAnswerKey } from '../src/answers/answer-key.mjs';
 import { generate } from '../src/site/generator.mjs';

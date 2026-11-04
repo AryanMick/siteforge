@@ -1,6 +1,6 @@
 // Working behaviour for the controls on generated test websites.
 //
-// Every page loads /assets/site-actions.js (src/pages/browser/site-pages.js + src/pages/browser/site-actions.js). It gives each
+// Every page loads /assets/site-actions.js (src/render/browser/site-pages.js + src/render/browser/site-actions.js). It gives each
 // button, form and toggle the effect its label names: search goes to a results page, "Place hold"/"Add to list"
 // save to a "My list" page, request and booking buttons open a request form that ends on a confirmation, sign-in goes
 // to a sign-in page, newsletter forms end on a confirmation page, cookie buttons hide the banner and remember the
@@ -17,7 +17,7 @@ import { deflateSync } from 'node:zlib';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 let engineSource = null;
-// Read once per process from the readable sources in src/pages/browser/, without indentation and whole-line // comments
+// Read once per process from the readable sources in src/render/browser/, without indentation and whole-line // comments
 // (no bundler here: this module is also loaded by the Next.js app, which must not pull in esbuild).
 const compact = source => source.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('//')).join('\n');
 const engine = () => engineSource ??= compact(`${readFileSync(join(HERE, 'browser', 'site-pages.js'), 'utf8')}\n${readFileSync(join(HERE, 'browser', 'site-actions.js'), 'utf8')}`);

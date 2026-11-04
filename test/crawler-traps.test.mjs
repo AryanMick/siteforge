@@ -10,7 +10,7 @@ import robotsParser from 'robots-parser';
 import { validateConfig, CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES, NOISE_TYPES } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
-import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { renderPage, finalizePage } from '../src/render/renderers.mjs';
 import { validateAnswerKey } from '../src/answers/answer-key.mjs';
 import { buildTransportPlan, LEGACY_SERVER_TYPES, validateTransportPlan } from '../src/noise/transport.mjs';
 import { generate } from '../src/site/generator.mjs';

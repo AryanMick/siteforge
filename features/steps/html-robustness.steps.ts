@@ -4,7 +4,7 @@ import { analyzePage } from '../../src/crawl/page-analysis.mjs';
 import { clusterPages } from '../../src/crawl/page-clusters.mjs';
 import { validateConfig } from '../../src/site/config.mjs';
 import { createModel } from '../../src/site/model.mjs';
-import { renderPage } from '../../src/pages/renderers.mjs';
+import { renderPage } from '../../src/render/renderers.mjs';
 
 interface HtmlWorld extends World {
   publicMarkup: string;

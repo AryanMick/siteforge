@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { validateConfig } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { analyzePage } from '../src/crawl/page-analysis.mjs';
 import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
 import { generate } from '../src/site/generator.mjs';

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { validateConfig, NOISE_TYPES } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { applyDataNoise, applyHtmlNoise, dateFormatVariant } from '../src/noise/noise.mjs';
-import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { renderPage, finalizePage } from '../src/render/renderers.mjs';
 import { RESOURCE_ONLY_TRAP_TYPES } from '../src/noise/crawler-traps.mjs';
 
 function model(seed, types, framework = 'html', severity = 3) {

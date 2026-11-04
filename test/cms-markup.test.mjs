@@ -7,7 +7,7 @@ import * as parse5 from 'parse5';
 import { generate } from '../src/site/generator.mjs';
 import { validateConfig } from '../src/site/config.mjs';
 import { createModel } from '../src/site/model.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
 
 function findNode(node, predicate) {

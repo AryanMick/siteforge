@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { generate } from '../src/site/generator.mjs';
 import { createModel } from '../src/site/model.mjs';
 import { validateConfig } from '../src/site/config.mjs';
-import { renderPage } from '../src/pages/renderers.mjs';
+import { renderPage } from '../src/render/renderers.mjs';
 import { serve } from '../src/preview/server.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
 import { DOMAINS } from '../src/site/presets.mjs';
