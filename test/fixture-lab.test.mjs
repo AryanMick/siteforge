@@ -5,7 +5,7 @@ import { mkdir, mkdtemp, readFile, rm, utimes, writeFile } from 'node:fs/promise
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan, totalPlannedPages, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { CATALOG_SETTINGS, listCatalogCases } from '../src/fixture-lab/case-catalog.mjs';
 import { publicZip } from '../src/fixture-lab/archive.mjs';

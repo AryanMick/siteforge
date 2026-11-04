@@ -7,8 +7,8 @@ import { join, resolve } from 'node:path';
 import { spawn, execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { setTimeout as sleep } from 'node:timers/promises';
-import { serverIdentity } from '../src/pagepilot/server-identity.mjs';
-import { probeServer, portAvailable, serverTarget, waitForServer } from '../src/pagepilot/launcher.mjs';
+import { serverIdentity } from '../src/crawl/pagepilot/server-identity.mjs';
+import { probeServer, portAvailable, serverTarget, waitForServer } from '../src/crawl/pagepilot/launcher.mjs';
 
 const execute = promisify(execFile);
 async function workspace(t) {
@@ -125,14 +125,14 @@ test('readiness waits for health and reports an early exit or timeout', async ()
 // Exercise the actual CLI with a tiny isolated Next stand-in, never the user's dev server.
 async function launcherFixture(t) {
   const root = await mkdtemp(join(tmpdir(), 'pagepilot-launcher-cli-'));
-  for (const directory of ['scripts', 'src/pagepilot', 'node_modules/next/dist/bin']) await mkdir(join(root, directory), { recursive: true });
-  for (const path of ['scripts/start-pagepilot.mjs', 'src/pagepilot/launcher.mjs', 'src/pagepilot/server-identity.mjs']) await copyFile(resolve(path), join(root, path));
+  for (const directory of ['scripts', 'src/crawl/pagepilot', 'node_modules/next/dist/bin']) await mkdir(join(root, directory), { recursive: true });
+  for (const path of ['scripts/start-siteforge.mjs', 'src/crawl/pagepilot/launcher.mjs', 'src/crawl/pagepilot/server-identity.mjs']) await copyFile(resolve(path), join(root, path));
   await writeFile(join(root, 'package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(join(root, 'node_modules/next/package.json'), JSON.stringify({ type: 'module' }));
   await writeFile(join(root, 'node_modules/next/dist/bin/next'), `
     import { createServer } from 'node:http';
     import { mkdir, writeFile } from 'node:fs/promises';
-    import { serverIdentity } from '../../../../src/pagepilot/server-identity.mjs';
+    import { serverIdentity } from '../../../../src/crawl/pagepilot/server-identity.mjs';
     if (process.env.PAGEPILOT_FIXTURE_EXIT) process.exit(17);
     const identity = await serverIdentity();
     const port = Number(process.argv[process.argv.indexOf('--port') + 1]);
@@ -157,7 +157,7 @@ async function launcherFixture(t) {
       await rm(root, { recursive: true, force: true });
     }
   });
-  return { root, script: join(root, 'scripts/start-pagepilot.mjs') };
+  return { root, script: join(root, 'scripts/start-siteforge.mjs') };
 }
 
 test('CLI starts a healthy background server and a second launch reuses the same PID', { timeout: 20000 }, async t => {

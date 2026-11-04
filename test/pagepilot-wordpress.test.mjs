@@ -4,8 +4,8 @@ import { mkdir, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { convertPages } from '../src/pagepilot/conversion.mjs';
-import { createWordPressDrafts, WordPressExportError } from '../src/pagepilot/wordpress.mjs';
+import { convertPages } from '../src/crawl/pagepilot/conversion.mjs';
+import { createWordPressDrafts, WordPressExportError } from '../src/crawl/pagepilot/wordpress.mjs';
 
 function mockTransport(responses, addresses = [{ address: '93.184.216.34', family: 4 }]) {
   const requests = []; const agents = [];

@@ -4,9 +4,9 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as parse5 from 'parse5';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { walk, attr } from '../src/util.mjs';
+import { walk, attr } from '../src/site/util.mjs';
 
 const plan = (domain, cmsProfile, seed, sourceClutter = 'realistic') => sitePlan({ name: 'Clutter', domain, pagesPerSite: 20, seed, visualStyle: 'conventional', randomness: 50, cmsProfile, noise: 'clean', sourceClutter }, 0);
 
@@ -56,7 +56,7 @@ test('clutter is deterministic per seed and differs between seeds, and never cha
 });
 
 test('realistic sites are served gzip-compressed when accepted, identical once decoded', async () => {
-  const { serve } = await import('../src/server.mjs');
+  const { serve } = await import('../src/preview/server.mjs');
   const { request } = await import('node:http');
   const { gunzipSync } = await import('node:zlib');
   const root = await mkdtemp(join(tmpdir(), 'siteforge-gzip-'));
@@ -87,7 +87,7 @@ test('realistic sites are served gzip-compressed when accepted, identical once d
 });
 
 test('realistic sites answer missing pages with a themed 404 and ship CMS-style robots.txt', async () => {
-  const { serve } = await import('../src/server.mjs');
+  const { serve } = await import('../src/preview/server.mjs');
   const root = await mkdtemp(join(tmpdir(), 'siteforge-404-'));
   try {
     for (const [cms, clutter] of [['drupal', 'realistic'], ['wordpress', 'realistic'], ['wordpress', 'none']]) {

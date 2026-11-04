@@ -1,6 +1,6 @@
-import { createProject, listProjects } from '@/pagepilot/store.mjs';
-import { validateProject } from '@/pagepilot/config.mjs';
-import { apiError, bodyJson, HttpError, json, localOnly } from '@/pagepilot/http';
+import { createProject, listProjects } from '@/crawl/pagepilot/store.mjs';
+import { validateProject } from '@/crawl/pagepilot/config.mjs';
+import { apiError, bodyJson, HttpError, json, localOnly } from '@/crawl/pagepilot/http';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

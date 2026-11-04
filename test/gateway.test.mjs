@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { request as httpRequest } from 'node:http';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { parseSiteHost, siteHostname, startGateway } from '../src/fixture-lab/gateway.mjs';
 
 const jobId = '23ba1c75-298c-4b49-9320-1707a6a714cf';

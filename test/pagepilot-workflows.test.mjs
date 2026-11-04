@@ -11,8 +11,8 @@ import {
   startRun,
   updateLabels,
   updateProject,
-} from '../src/pagepilot/store.mjs';
-import { recordsCsv } from '../src/pagepilot/export.mjs';
+} from '../src/crawl/pagepilot/store.mjs';
+import { recordsCsv } from '../src/crawl/pagepilot/export.mjs';
 
 async function completedRun(projectId, runId) {
   for (let attempt = 0; attempt < 300; attempt++) {

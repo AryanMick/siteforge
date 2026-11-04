@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planFieldLocations } from '../src/field-locations.mjs';
+import { planFieldLocations } from '../src/answers/field-locations.mjs';
 
 const present = (selector, read = 'textContent', precision = 'value') => ({
   state: 'present', selector, read, precision,

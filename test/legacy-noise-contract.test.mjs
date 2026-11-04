@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateConfig, NOISE_TYPES } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise, dateFormatVariant } from '../src/noise.mjs';
-import { renderPage, finalizePage } from '../src/renderers.mjs';
-import { RESOURCE_ONLY_TRAP_TYPES } from '../src/crawler-traps.mjs';
+import { validateConfig, NOISE_TYPES } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise, dateFormatVariant } from '../src/noise/noise.mjs';
+import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { RESOURCE_ONLY_TRAP_TYPES } from '../src/noise/crawler-traps.mjs';
 
 function model(seed, types, framework = 'html', severity = 3) {
   const config = validateConfig({ version: 1, seed, site: { id: 'legacy-contract', domain: 'library', framework, visualStyle: 'legacy', pageCount: 60 }, noise: { level: 'custom', probability: 1, severity, maxPerPage: 12, types } });

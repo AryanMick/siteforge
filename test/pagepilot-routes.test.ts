@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { GET, POST } from '../app/api/projects/route';
 import { GET as health } from '../app/api/health/route';
-import { serverIdentity } from '../src/pagepilot/server-identity.mjs';
+import { serverIdentity } from '../src/crawl/pagepilot/server-identity.mjs';
 import { GET as detail } from '../app/api/projects/[id]/route';
 import { POST as run } from '../app/api/projects/[id]/run/route';
 import { GET as download } from '../app/api/projects/[id]/runs/[runId]/export/route';
@@ -14,7 +14,7 @@ import { PATCH as settings } from '../app/api/projects/[id]/route';
 import { PATCH as labels } from '../app/api/projects/[id]/runs/[runId]/labels/route';
 import { POST as recluster } from '../app/api/projects/[id]/recluster/route';
 import { POST as stop } from '../app/api/projects/[id]/runs/[runId]/stop/route';
-import { createProject, startRun, getRun, runDirectory } from '../src/pagepilot/store.mjs';
+import { createProject, startRun, getRun, runDirectory } from '../src/crawl/pagepilot/store.mjs';
 
 const origin = 'http://127.0.0.1:4400';
 const request = (body: string, headers: Record<string, string> = {}) => new Request(`${origin}/api/projects`, { method: 'POST', headers: { Origin: origin, 'Content-Type': 'application/json', ...headers }, body });

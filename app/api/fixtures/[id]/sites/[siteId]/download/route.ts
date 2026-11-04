@@ -1,6 +1,6 @@
 import { Readable } from 'node:stream';
 import { answerStream, downloadName, publicZipStream, zipEntriesStream } from '@/fixture-lab/archive.mjs';
-import { cmsPackageEntries, MAX_CMS_PAGES } from '@/cms-theme.mjs';
+import { cmsPackageEntries, MAX_CMS_PAGES } from '@/cms/cms-theme.mjs';
 import { ownedSite } from '@/fixture-lab/store.mjs';
 import { apiError, FixtureHttpError, localOnly, validJobId, validSiteId } from '@/fixture-lab/http.mjs';
 

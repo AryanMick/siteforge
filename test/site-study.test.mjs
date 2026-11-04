@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createLegacyFixture } from '../src/legacy-fixture.mjs';
-import { serve } from '../src/server.mjs';
-import { buildBlueprint, runSiteStudy } from '../src/site-study.mjs';
+import { createLegacyFixture } from '../src/noise/legacy-fixture.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { buildBlueprint, runSiteStudy } from '../src/crawl/site-study.mjs';
 
 test('sample issue categories select matching fictional obstacles without copying content', () => {
   const crawl = { startUrl: 'https://archive.example.test/records/', pages: [{

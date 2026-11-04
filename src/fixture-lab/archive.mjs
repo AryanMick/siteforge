@@ -3,7 +3,7 @@ import { createReadStream } from 'node:fs';
 import { readFile, stat } from 'node:fs/promises';
 import { PassThrough } from 'node:stream';
 import { join } from 'node:path';
-import { listFiles } from '../artifact-files.mjs';
+import { listFiles } from '../site/artifact-files.mjs';
 
 export async function publicZip(siteDirectory) {
   const chunks = [];

@@ -2,7 +2,7 @@ import { Readable } from 'node:stream';
 import { evaluatorDownloadName, evaluatorZipStream, HandoffUnavailableError } from '@/fixture-lab/handoff.mjs';
 import { getJob, siteDirectory } from '@/fixture-lab/store.mjs';
 import { downloadName, zipEntriesStream } from '@/fixture-lab/archive.mjs';
-import { cmsPackageEntries, MAX_CMS_PAGES } from '@/cms-theme.mjs';
+import { cmsPackageEntries, MAX_CMS_PAGES } from '@/cms/cms-theme.mjs';
 import { apiError, FixtureHttpError, localOnly, validJobId } from '@/fixture-lab/http.mjs';
 
 export const runtime = 'nodejs';

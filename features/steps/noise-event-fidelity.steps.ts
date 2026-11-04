@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { Given, When, Then, type World } from '@cucumber/cucumber';
 import { parse, serialize } from 'parse5';
-import { validateConfig } from '../../src/config.mjs';
-import { createModel } from '../../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../../src/noise.mjs';
-import { renderPage } from '../../src/renderers.mjs';
+import { validateConfig } from '../../src/site/config.mjs';
+import { createModel } from '../../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../../src/noise/noise.mjs';
+import { renderPage } from '../../src/pages/renderers.mjs';
 
 interface NoisePlanWorld extends World {
   noiseModel: ReturnType<typeof createModel>;

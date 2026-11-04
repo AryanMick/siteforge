@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { DOMAINS, PRESETS } from '../presets.mjs';
-import { CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES } from '../config.mjs';
-import { TRAP_SCENARIOS } from '../crawler-traps.mjs';
+import { DOMAINS, PRESETS } from '../site/presets.mjs';
+import { CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES } from '../site/config.mjs';
+import { TRAP_SCENARIOS } from '../noise/crawler-traps.mjs';
 import { OPT_IN_SCENARIOS, OPT_IN_TRANSPORT, SCENARIO_LABELS, TRANSPORT_LABELS } from './catalog.mjs';
 import { CATALOG_SETTINGS, buildCatalogSiteConfig, getCatalogCase, listCatalogCases } from './case-catalog.mjs';
-import { seedFor } from '../util.mjs';
-import { SECTION_LABELS, siteNameFor } from '../domain-content.mjs';
+import { seedFor } from '../site/util.mjs';
+import { SECTION_LABELS, siteNameFor } from '../site/domain-content.mjs';
 
 export const FIXTURE_DOMAINS = [...DOMAINS];
 export const FRAMEWORKS = ['html', 'react', 'angular'];
@@ -149,8 +149,9 @@ export function sitePlan(input, index) {
   const noise = select(value.noise, NOISE_LEVELS, value.seed, index, 3);
   const fieldLayout = value.fieldLayout === 'mixed' ? 'mixed' : select(value.fieldLayout, FIELD_LAYOUTS.filter(item => item !== 'mixed'), value.seed, index, 4);
   const linkMode = value.linkMode === 'mixed' ? 'mixed' : select(value.linkMode, ['relative', 'absolute', 'mixed'], value.seed, index, 5);
-  // Random/mixed CMS choices include the nine platform profiles (2026-10-30); WordPress and Drupal stay twice as likely.
-  const cmsProfile = select(value.cmsProfile, ['none', 'wordpress', 'drupal', 'wordpress', 'drupal', 'joomla', 'squarespace', 'webflow', 'hubspot', 'aem', 'sitecore', 'wix', 'shopify', 'ghost'], value.seed, index, 10);
+  // Random CMS markup is WordPress or Drupal only (2026-11-04, the user's request). The other platform profiles can
+  // still be asked for by name through the API and the case catalog, but the app and Random never pick them.
+  const cmsProfile = select(value.cmsProfile, ['wordpress', 'drupal'], value.seed, index, 10);
   const builderProfile = cmsProfile === 'wordpress' ? select(value.builderProfile, ['none', 'gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery'], value.seed, index, 11) : 'none';
   // Crawler traps widen the URL space, so the random choice never selects them implicitly.
   const scenario = select(value.scenario, SCENARIOS.filter(item => !OPT_IN_SCENARIOS.includes(item)).filter(item => item !== 'client-delay' || framework !== 'html'), value.seed, index, 6);

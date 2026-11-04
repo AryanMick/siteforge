@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { validateConfig } from '../src/config.mjs';
-import { generate, listFiles } from '../src/generator.mjs';
-import { createModel } from '../src/model.mjs';
-import { DOMAINS, PRESETS } from '../src/presets.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { generate, listFiles } from '../src/site/generator.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { DOMAINS, PRESETS } from '../src/site/presets.mjs';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { randomFixtureInput, randomRequestSchema } from '../src/fixture-lab/random.mjs';
-import { hash } from '../src/util.mjs';
+import { hash } from '../src/site/util.mjs';
 
 function assertInventory(model, domain, pageCount) {
   assert.equal(model.pages.length, pageCount, `${domain} ${pageCount}`);

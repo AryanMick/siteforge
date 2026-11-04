@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { evaluate } from '@/evaluator.mjs';
+import { evaluate } from '@/answers/evaluator.mjs';
 import { ownedSite } from '@/fixture-lab/store.mjs';
 import { apiError, bodyJson, FixtureHttpError, json, localOnly, validJobId, validSiteId } from '@/fixture-lab/http.mjs';
 

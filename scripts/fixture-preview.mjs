@@ -1,6 +1,6 @@
 import { readFile, realpath } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
-import { serve } from '../src/server.mjs';
+import { serve } from '../src/preview/server.mjs';
 import { atomicJson, PREVIEW_LIFETIME_MS } from '../src/fixture-lab/store.mjs';
 import { ensurePreviewCertificate } from '../src/fixture-lab/tls.mjs';
 

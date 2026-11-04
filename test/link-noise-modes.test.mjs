@@ -2,11 +2,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { runInNewContext } from 'node:vm';
 import { parse } from 'parse5';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../src/noise.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { walk } from '../src/util.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { walk } from '../src/site/util.mjs';
 
 const modes = ['root-relative', 'relative', 'absolute', 'mixed', 'base-relative'];
 const input = mode => ({

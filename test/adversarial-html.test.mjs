@@ -4,16 +4,16 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse } from 'parse5';
-import { validateConfig, NOISE_TYPES, MARKUP_NOISE_TYPES } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise, DATE_FORMAT_POOL, FIELD_LABEL_POOLS, dateFormatVariant, fieldLabelVariant } from '../src/noise.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { generate, listFiles } from '../src/generator.mjs';
-import { attr, textContent, walk } from '../src/util.mjs';
+import { validateConfig, NOISE_TYPES, MARKUP_NOISE_TYPES } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise, DATE_FORMAT_POOL, FIELD_LABEL_POOLS, dateFormatVariant, fieldLabelVariant } from '../src/noise/noise.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { generate, listFiles } from '../src/site/generator.mjs';
+import { attr, textContent, walk } from '../src/site/util.mjs';
 
-// Every page loads the site's own behaviour script (and the search page its index; src/site-runtime.mjs); markup
+// Every page loads the site's own behaviour script (and the search page its index; src/pages/site-runtime.mjs); markup
 // operators must add no other script.
 const withoutRuntime = html => html.replace(/<script\b[^>]*assets\/(site-actions|search-index)\.js[^>]*><\/script>\s*/gi, '');
 const NEW_TYPES = ['comment-clutter', 'hidden-boilerplate', 'duplicate-heading', 'nested-layout-table', 'link-variants', 'broken-image', 'conflicting-metadata', 'obsolete-markup', 'missing-main', 'legacy-document', 'image-missing-alt', 'onclick-navigation', 'javascript-only-link', 'deep-wrapper-tree', 'frame-missing-title', 'legacy-color-attribute', 'shortcode-residue', 'split-text-runs', 'entity-encoded-text', 'uppercase-legacy-tags', 'microdata-attributes', 'inline-svg-icons', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements'];

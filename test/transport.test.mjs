@@ -4,8 +4,8 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { buildTransportPlan, TRANSPORT_PROFILES, validateTransportPlan } from '../src/transport.mjs';
-import { serve } from '../src/server.mjs';
+import { buildTransportPlan, TRANSPORT_PROFILES, validateTransportPlan } from '../src/noise/transport.mjs';
+import { serve } from '../src/preview/server.mjs';
 
 const fixtureRoots = [];
 test.after(async () => {

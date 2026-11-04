@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise } from '../src/noise.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise } from '../src/noise/noise.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
 
 function fixture(layout, noise = { level: 'clean' }) {
   return validateConfig({ seed: 41, site: { id: `locations-${layout}`, pageCount: 12 },

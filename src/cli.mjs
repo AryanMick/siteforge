@@ -4,13 +4,13 @@ import { resolve, join, dirname } from 'node:path';
 import { parseArgs } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { parse, stringify } from 'yaml';
-import { loadConfig, validateConfig, NOISE_TYPES } from './config.mjs';
-import { DOMAINS, presetConfig } from './presets.mjs';
-import { generate } from './generator.mjs';
-import { serve } from './server.mjs';
-import { crawl } from './crawler.mjs';
-import { evaluate, writeReports } from './evaluator.mjs';
-import { json } from './util.mjs';
+import { loadConfig, validateConfig, NOISE_TYPES } from './site/config.mjs';
+import { DOMAINS, presetConfig } from './site/presets.mjs';
+import { generate } from './site/generator.mjs';
+import { serve } from './preview/server.mjs';
+import { crawl } from './crawl/crawler.mjs';
+import { evaluate, writeReports } from './answers/evaluator.mjs';
+import { json } from './site/util.mjs';
 
 const help = `Siteforge benchmark generator
 
@@ -67,7 +67,7 @@ export async function main(argv = process.argv.slice(2)) {
   }
   if (command === 'cms-theme') {
     if (!p[1] || !v.out || !v.cms) throw new Error('cms-theme requires a generated output directory, --cms wordpress|drupal and --out file.zip');
-    const { cmsPackageEntries } = await import('./cms-theme.mjs');
+    const { cmsPackageEntries } = await import('./cms/cms-theme.mjs');
     const { zipEntriesStream } = await import('./fixture-lab/archive.mjs');
     const { createWriteStream } = await import('node:fs');
     const { pipeline } = await import('node:stream/promises');

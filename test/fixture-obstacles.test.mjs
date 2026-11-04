@@ -4,11 +4,11 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
-import { generate } from '../src/generator.mjs';
-import { serve } from '../src/server.mjs';
-import { NOISE_TYPES, LEGACY_NOISE_TYPES, DEFAULT_NOISE_TYPES, validateConfig, loadConfig } from '../src/config.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { NOISE_TYPES, LEGACY_NOISE_TYPES, DEFAULT_NOISE_TYPES, validateConfig, loadConfig } from '../src/site/config.mjs';
 import { OBSTACLE_CATALOG, TRANSPORT_CATALOG } from '../src/fixture-lab/catalog.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
 
 test('UI catalogs exactly match implemented conditions, without advertised placeholders', () => {
   assert.deepEqual(new Set(OBSTACLE_CATALOG.map(item => item.id)), new Set(NOISE_TYPES));

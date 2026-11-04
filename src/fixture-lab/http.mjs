@@ -1,4 +1,4 @@
-import { isLocalRequest, isRunId } from '../workbench/security.ts';
+import { isLocalRequest, isRunId } from './security.ts';
 import { ZodError } from 'zod';
 
 export class FixtureHttpError extends Error { constructor(status, message) { super(message); this.status = status; } }

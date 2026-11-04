@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
-import { runLayer } from '../scripts/run-verification-layer.mjs';
+import { runLayer } from '../scripts/tools/run-verification-layer.mjs';
 
 test('verification records real exit codes and both output streams', async () => {
   const directory = await mkdtemp(join(tmpdir(), 'verify-runner-'));

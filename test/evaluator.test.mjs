@@ -3,7 +3,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { evaluate, writeReports } from '../src/evaluator.mjs';
+import { evaluate, writeReports } from '../src/answers/evaluator.mjs';
 
 function truthPage(url, cluster, fields = { title: url }, extra = {}) {
   return {

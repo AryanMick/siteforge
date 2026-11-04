@@ -1,8 +1,8 @@
 import { z } from 'zod';
-import { convertPages } from '@/pagepilot/conversion.mjs';
-import { getRun } from '@/pagepilot/store.mjs';
-import { createWordPressDrafts, WordPressExportError } from '@/pagepilot/wordpress.mjs';
-import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/pagepilot/http';
+import { convertPages } from '@/crawl/pagepilot/conversion.mjs';
+import { getRun } from '@/crawl/pagepilot/store.mjs';
+import { createWordPressDrafts, WordPressExportError } from '@/crawl/pagepilot/wordpress.mjs';
+import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/crawl/pagepilot/http';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

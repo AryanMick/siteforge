@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { crawlRecovery } from '../src/pagepilot/crawl-recovery.mjs';
+import { crawlRecovery } from '../src/crawl/pagepilot/crawl-recovery.mjs';
 
 function run(overrides = {}) {
   return { status: 'failed', error: null, result: { provenance: { synthetic: false, sourceUrl: 'https://archive.example/records' }, crawl: { analyzed: 0, counts: {}, allEligibleAnalyzed: false }, outcomes: [], ...overrides } };

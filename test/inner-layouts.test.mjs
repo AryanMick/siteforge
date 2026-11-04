@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as parse5 from 'parse5';
-import { createModel } from '../src/model.mjs';
-import { validateConfig } from '../src/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { validateConfig } from '../src/site/config.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { DOMAINS } from '../src/presets.mjs';
-import { innerCss, innerLookClasses, renderDetailVariant, renderListingVariant } from '../src/inner-layouts.mjs';
+import { DOMAINS } from '../src/site/presets.mjs';
+import { innerCss, innerLookClasses, renderDetailVariant, renderListingVariant } from '../src/pages/inner-layouts.mjs';
 
 const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 const FIELDS = '<dl class="field-list"><dt>Marker label</dt><dd>FIELD-MARKER-VALUE</dd></dl>';

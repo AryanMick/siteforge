@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { publicProjectInput, validateProject, evaluationGate } from '../src/pagepilot/config.mjs';
+import { publicProjectInput, validateProject, evaluationGate } from '../src/crawl/pagepilot/config.mjs';
 
 test('quick start creates a bounded public project from a pasted address', () => {
   const input = publicProjectInput('  books.toscrape.com/catalogue/?page=2#results  ');

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { compareReferenceDirectory, summarizeReference } from '../scripts/reference-comparison.mjs';
+import { compareReferenceDirectory, summarizeReference } from '../scripts/tools/reference-comparison.mjs';
 
 test('comparison keeps counts and unknown gaps without treating samples as ground truth', async t => {
   const root = await mkdtemp(join(tmpdir(), 'reference-comparison-'));

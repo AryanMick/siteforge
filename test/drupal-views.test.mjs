@@ -4,11 +4,11 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as cheerio from 'cheerio';
-import { generate } from '../src/generator.mjs';
-import { serve } from '../src/server.mjs';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { renderPage } from '../src/renderers.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
 
 const config = (extra = {}) => ({ version: 1, seed: 7, site: { id: 'drupal-views', domain: 'museum', cmsProfile: 'drupal', pageCount: 120, pageSize: 10, ...extra.site }, ...extra.top });
 

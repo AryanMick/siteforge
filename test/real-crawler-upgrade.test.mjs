@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { crawlSite, isCanonicalUpgrade } from '../src/real-crawler.mjs';
+import { crawlSite, isCanonicalUpgrade } from '../src/crawl/real-crawler.mjs';
 
 const http = 'http://archive.example';
 const https = 'https://archive.example';

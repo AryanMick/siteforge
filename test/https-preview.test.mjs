@@ -10,8 +10,8 @@ import { fileURLToPath } from 'node:url';
 import { once } from 'node:events';
 import { promisify } from 'node:util';
 import { ensurePreviewCertificate } from '../src/fixture-lab/tls.mjs';
-import { serve } from '../src/server.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
 
 const roots = [];
 const execFileAsync = promisify(execFile);
@@ -280,7 +280,7 @@ test('HTTP remains the default and fixture-preview opts into HTTPS from private 
     await once(child, 'exit');
   }
 
-  for (const file of ['src/server.mjs', 'src/fixture-lab/tls.mjs', 'scripts/fixture-preview.mjs']) {
+  for (const file of ['src/preview/server.mjs', 'src/fixture-lab/tls.mjs', 'scripts/fixture-preview.mjs']) {
     const source = await readFile(new URL(`../${file}`, import.meta.url), 'utf8');
     assert.doesNotMatch(source, /NODE_TLS_REJECT_UNAUTHORIZED|rejectUnauthorized\s*:\s*false/);
   }

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { analyzePage } from '../src/page-analysis.mjs';
+import { analyzePage } from '../src/crawl/page-analysis.mjs';
 
 const url = path => `https://example.test${path}`;
 const wrap = body => `<!doctype html><html lang="en"><head><title>Legacy</title></head><body>${body}</body></html>`;

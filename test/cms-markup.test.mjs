@@ -4,10 +4,10 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as parse5 from 'parse5';
-import { generate } from '../src/generator.mjs';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { renderPage } from '../src/renderers.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
 
 function findNode(node, predicate) {

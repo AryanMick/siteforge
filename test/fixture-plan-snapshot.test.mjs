@@ -8,9 +8,9 @@ import { pathToFileURL } from 'node:url';
 import { FRAMEWORKS, sitePlan } from '../src/fixture-lab/config.mjs';
 import { CATALOG_SETTINGS } from '../src/fixture-lab/case-catalog.mjs';
 import { assertSavedSiteSummary } from '../src/fixture-lab/plans.mjs';
-import { PRESETS } from '../src/presets.mjs';
+import { PRESETS } from '../src/site/presets.mjs';
 import { createJob, getJob, jobDirectory, siteDirectory } from '../src/fixture-lab/store.mjs';
-import { hash } from '../src/util.mjs';
+import { hash } from '../src/site/util.mjs';
 
 const node = process.execPath;
 const cwd = resolve('.');
@@ -36,7 +36,7 @@ test('saved plans survive choice and preset drift; audit rejects altered provena
     finally { PRESETS.library.types[0].weight = oldWeight; }
 
     const preload = join(root, 'changed-choices.mjs');
-    await writeFile(preload, `import { FRAMEWORKS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/fixture-lab/config.mjs')).href)};\nimport { PRESETS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/presets.mjs')).href)};\nFRAMEWORKS.unshift('html');\nPRESETS.library.types[0].weight = 7;\n`);
+    await writeFile(preload, `import { FRAMEWORKS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/fixture-lab/config.mjs')).href)};\nimport { PRESETS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/site/presets.mjs')).href)};\nFRAMEWORKS.unshift('html');\nPRESETS.library.types[0].weight = 7;\n`);
     process.env.NODE_OPTIONS = `--import=${preload}`;
     const started = await createJob(request);
     let job;
@@ -58,7 +58,7 @@ test('saved plans survive choice and preset drift; audit rejects altered provena
     assert.equal(savedConfig.contentTypes[0].weight, oldWeight);
     assert(!(await readdir(join(siteRoot, 'public'))).includes('plan.json'));
     const evidencePath = join(root, 'audit.json');
-    const runAudit = () => execFileSync(node, ['scripts/audit-fixture-job.mjs', job.id, evidencePath], { cwd, env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const runAudit = () => execFileSync(node, ['scripts/tools/audit-fixture-job.mjs', job.id, evidencePath], { cwd, env: process.env, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     runAudit();
     assert.equal(JSON.parse(await readFile(evidencePath, 'utf8')).planProvenance, 'saved-plan-snapshot');
 

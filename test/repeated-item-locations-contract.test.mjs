@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { planRepeatedItemLocations } from '../src/repeated-item-locations.mjs';
+import { planRepeatedItemLocations } from '../src/answers/repeated-item-locations.mjs';
 
 const schema = [
   { name: 'summary', optional: true },

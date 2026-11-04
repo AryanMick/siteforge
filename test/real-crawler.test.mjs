@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { crawlSite, normalizeCrawlUrl, privateAddress, pinnedLookup, redirectTarget, scopeReason } from '../src/real-crawler.mjs';
+import { crawlSite, normalizeCrawlUrl, privateAddress, pinnedLookup, redirectTarget, scopeReason } from '../src/crawl/real-crawler.mjs';
 
 async function fixture(routes,run){
   const hits=[];const server=createServer(async(req,res)=>{

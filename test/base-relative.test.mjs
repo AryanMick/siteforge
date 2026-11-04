@@ -1,11 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parse } from 'parse5';
-import { validateConfig } from '../src/config.mjs';
+import { validateConfig } from '../src/site/config.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { attr, walk } from '../src/util.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { attr, walk } from '../src/site/util.mjs';
 
 const origin = 'https://base-relative.example';
 const config = (variation = 0) => validateConfig({ seed: 124, variation: { amount: variation }, site: {

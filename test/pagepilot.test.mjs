@@ -4,9 +4,9 @@ import { mkdtemp, rm, readFile, writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { randomUUID } from 'node:crypto';
-import { validateProject, evaluationGate } from '../src/pagepilot/config.mjs';
-import { runPipeline, resultStatus, crawlStageStatus } from '../src/pagepilot/pipeline.mjs';
-import { createProject, listProjects, startRun, projectDetail, getRun, checkId, recoverActiveRun } from '../src/pagepilot/store.mjs';
+import { validateProject, evaluationGate } from '../src/crawl/pagepilot/config.mjs';
+import { runPipeline, resultStatus, crawlStageStatus } from '../src/crawl/pagepilot/pipeline.mjs';
+import { createProject, listProjects, startRun, projectDetail, getRun, checkId, recoverActiveRun } from '../src/crawl/pagepilot/store.mjs';
 
 test('project validation rejects unsupported settings and unsafe URL input', () => {
   assert.equal(validateProject({ name: ' Library ' }).name, 'Library');

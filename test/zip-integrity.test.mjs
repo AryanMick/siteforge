@@ -6,8 +6,8 @@ import { tmpdir } from 'node:os';
 import AdmZip from 'adm-zip';
 import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
-import { hash } from '../src/util.mjs';
-import { verifyZipEntries } from '../scripts/zip-integrity.mjs';
+import { hash } from '../src/site/util.mjs';
+import { verifyZipEntries } from '../scripts/checks/zip-integrity.mjs';
 
 test('streamed ZIP verification checks every entry, digest and exact inventory', async () => {
   const root = await mkdtemp(join(tmpdir(), 'zip-integrity-'));
@@ -41,7 +41,7 @@ test('scale verifier preserves previous evidence and records a failed resume hon
     const previous = JSON.stringify({ status: 'passed', previous: true });
     await writeFile(report, previous);
     await writeFile(join(root, 'public.zip'), 'previous archive');
-    const run = output => execFileSync(process.execPath, ['scripts/check-single-site-scale.mjs'], {
+    const run = output => execFileSync(process.execPath, ['scripts/checks/check-single-site-scale.mjs'], {
       env: { ...process.env, SCALE_EVIDENCE_DIR: output, SCALE_JOB_ID: randomUUID(), FIXTURE_LAB_DATA_DIR: join(root, 'missing-data') },
       stdio: 'pipe', timeout: 20000,
     });

@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { siteHostname } from '../src/fixture-lab/gateway.mjs';
 import { publishSiteHandoff } from '../src/fixture-lab/handoff.mjs';
@@ -25,7 +25,7 @@ test('job audit verifies generated answers and detects changed public bytes', as
     await writeFile(join(jobRoot, 'job.json'), JSON.stringify({ id, status: 'completed', config, completedSites: 1, totalPages: 5, sites: [plan.summary] }));
     await writeFile(join(jobRoot, 'hosts.txt'), `127.0.0.1 ${siteHostname(plan.id)}\n`);
     const evidencePath = join(root, 'evidence.json');
-    const run = () => execFileSync(process.execPath, ['scripts/audit-fixture-job.mjs', id, evidencePath], { cwd: resolve('.'), env: { ...process.env, FIXTURE_LAB_DATA_DIR: root }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
+    const run = () => execFileSync(process.execPath, ['scripts/tools/audit-fixture-job.mjs', id, evidencePath], { cwd: resolve('.'), env: { ...process.env, FIXTURE_LAB_DATA_DIR: root }, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] });
     run();
     assert.equal(JSON.parse(await readFile(evidencePath, 'utf8')).status, 'passed');
     await writeFile(join(jobRoot, 'hosts.txt'), 'tampered historical mapping\n');

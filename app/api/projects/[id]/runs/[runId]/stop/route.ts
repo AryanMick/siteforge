@@ -1,5 +1,5 @@
-import { requestRunStop } from '@/pagepilot/store.mjs';
-import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/pagepilot/http';
+import { requestRunStop } from '@/crawl/pagepilot/store.mjs';
+import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/crawl/pagepilot/http';
 
 export const runtime = 'nodejs';
 

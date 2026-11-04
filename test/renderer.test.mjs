@@ -3,7 +3,7 @@ import { mkdtemp, readFile, stat, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { finalizePage, prepareAssets, renderPage } from '../src/renderers.mjs';
+import { finalizePage, prepareAssets, renderPage } from '../src/pages/renderers.mjs';
 
 function fixture(framework = 'html') {
   return {
@@ -59,7 +59,7 @@ test('long names and headings are escaped and supported by fixed responsive type
   assert.match(html, /&lt;site&gt;/);
   assert.match(html, /&lt;unsafe&gt;/);
   assert.doesNotMatch(html, /<unsafe>/);
-  const css = await readFile(new URL('../src/site.css', import.meta.url), 'utf8');
+  const css = await readFile(new URL('../src/pages/site.css', import.meta.url), 'utf8');
   assert.doesNotMatch(css, /font-size:\s*(?:clamp|[^;]*vw)/);
   assert.doesNotMatch(css, /white-space:\s*nowrap/);
   assert.match(css, /h1[^}]*overflow-wrap:\s*anywhere/s);

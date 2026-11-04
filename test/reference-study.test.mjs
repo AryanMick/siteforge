@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { access, mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { runReferenceStudy } from '../src/reference-study.mjs';
-import { scopeReason } from '../src/real-crawler.mjs';
+import { runReferenceStudy } from '../src/crawl/reference-study.mjs';
+import { scopeReason } from '../src/crawl/real-crawler.mjs';
 
 const sourceMarker = '<source-secret>Live Source Name</source-secret>';
 const config = {

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { buildClusterInsights } from '../src/pagepilot/insights.mjs';
+import { buildClusterInsights } from '../src/crawl/pagepilot/insights.mjs';
 
 function clustered(urls, overrides = {}) {
   return { clusters: [{ id: 'cluster-001', urls, representativeUrl: urls[0] ?? '', cohesion: 0.73, ...overrides }] };

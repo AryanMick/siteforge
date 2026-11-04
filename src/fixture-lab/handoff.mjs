@@ -7,8 +7,8 @@ import { pipeline } from 'node:stream/promises';
 import ZipStream from 'zip-stream';
 import { siteHostname } from './gateway.mjs';
 import { jobDirectory, siteDirectory, validUuid } from './store.mjs';
-import { hashFile } from '../json-artifacts.mjs';
-import { hash } from '../util.mjs';
+import { hashFile } from '../site/json-artifacts.mjs';
+import { hash } from '../site/util.mjs';
 
 const entryHtml = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="0; url=./website/index.html"><title>Open test website</title></head><body><a href="./website/index.html">Open test website</a></body></html>\n';
 const noFollow = constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0);

@@ -18,13 +18,13 @@ import {
   type ConformanceIssueCode,
   type ConformanceResult,
   type ReferenceSchema,
-} from "../../src/engine/structure.js";
+} from "../../src/crawl/engine/structure.js";
 import {
   createBookHtmlFixture,
   extractObservedBookFields,
   type BookHtmlVariant,
-} from "../../src/engine/book-html.js";
-import type { BookFields } from "../../src/engine/structure.js";
+} from "../../src/crawl/engine/book-html.js";
+import type { BookFields } from "../../src/crawl/engine/structure.js";
 
 const completeBook: BookFields = {
   title: "The Glass Library",

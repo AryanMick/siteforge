@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generate } from '../src/generator.mjs';
-import { createModel } from '../src/model.mjs';
-import { validateConfig } from '../src/config.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { serve } from '../src/server.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { serve } from '../src/preview/server.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { DOMAINS } from '../src/presets.mjs';
+import { DOMAINS } from '../src/site/presets.mjs';
 
 const plan = (domain, extra = {}) => sitePlan({ name: 'Legacy library test set', domain, pagesPerSite: 24, seed: 48291, ...extra }, 0);
 

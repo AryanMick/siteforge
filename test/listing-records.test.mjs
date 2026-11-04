@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { extractPublicPage } from '../src/crawler.mjs';
-import { evaluate } from '../src/evaluator.mjs';
+import { extractPublicPage } from '../src/crawl/crawler.mjs';
+import { evaluate } from '../src/answers/evaluator.mjs';
 
 // 2026-11-02: the bundled baseline crawler reports listing records, and the evaluator scores them.
 test('the baseline extracts listing records that the evaluator matches to the answer key', async () => {

@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { cleanupTestArtifacts } from '../scripts/test-artifact-cleanup.mjs';
+import { cleanupTestArtifacts } from '../scripts/checks/test-artifact-cleanup.mjs';
 
 test('cleanup deletes only tracked jobs and its own downloaded files', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'siteforge-test-cleanup-'));

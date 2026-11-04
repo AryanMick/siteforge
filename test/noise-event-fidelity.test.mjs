@@ -1,10 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { parse, serialize } from 'parse5';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../src/noise.mjs';
-import { renderPage } from '../src/renderers.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
 
 const FIELD_LIST_OPERATORS = ['nested-layout-table', 'obsolete-markup', 'deep-wrapper-tree'];
 

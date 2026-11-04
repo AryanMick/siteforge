@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import { Given, When, Then, type World } from '@cucumber/cucumber';
 import { parse } from 'parse5';
 import { sitePlan } from '../../src/fixture-lab/config.mjs';
-import { validateConfig } from '../../src/config.mjs';
-import { createModel } from '../../src/model.mjs';
-import { renderPage } from '../../src/renderers.mjs';
-import { applyHtmlNoise } from '../../src/noise.mjs';
-import { attr, walk } from '../../src/util.mjs';
+import { validateConfig } from '../../src/site/config.mjs';
+import { createModel } from '../../src/site/model.mjs';
+import { renderPage } from '../../src/pages/renderers.mjs';
+import { applyHtmlNoise } from '../../src/noise/noise.mjs';
+import { attr, walk } from '../../src/site/util.mjs';
 
 interface BaseWorld extends World {
   request: Record<string, unknown>;

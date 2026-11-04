@@ -3,12 +3,12 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { After, Given, Then, When, type World } from '@cucumber/cucumber';
-import { validateConfig } from '../../src/config.mjs';
-import { presetConfig } from '../../src/presets.mjs';
-import { createModel } from '../../src/model.mjs';
-import { applyDataNoise } from '../../src/noise.mjs';
-import { generate } from '../../src/generator.mjs';
-import { serve } from '../../src/server.mjs';
+import { validateConfig } from '../../src/site/config.mjs';
+import { presetConfig } from '../../src/site/presets.mjs';
+import { createModel } from '../../src/site/model.mjs';
+import { applyDataNoise } from '../../src/noise/noise.mjs';
+import { generate } from '../../src/site/generator.mjs';
+import { serve } from '../../src/preview/server.mjs';
 
 interface GenerationWorld extends World {
   libraryConfig: ReturnType<typeof validateConfig>;

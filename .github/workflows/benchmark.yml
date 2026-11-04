@@ -40,7 +40,6 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm test
       - run: npm run typecheck
-      - run: npm run test:workbench
       - run: npm run test:pagepilot
       - run: npm run test:generator-api
       - run: npm run test:bdd
@@ -55,9 +54,7 @@ jobs:
       - run: npm run test:generator-recovery
       - run: npm run test:generator-navigation
       - run: npm run test:generator-redesign
-      - run: npm run test:catalog-ui
-      - run: node scripts/check-random-ui.mjs
-      - run: npm run test:ui
+      - run: node scripts/checks/check-random-ui.mjs
       - run: npm run test:browser
       - run: npm run test:field-locations
       - run: npm run test:cms-markup

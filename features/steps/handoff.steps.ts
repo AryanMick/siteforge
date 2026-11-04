@@ -4,7 +4,7 @@ import AdmZip from 'adm-zip';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { listFiles } from '../../src/artifact-files.mjs';
+import { listFiles } from '../../src/site/artifact-files.mjs';
 import { evaluatorZipStream, handoffDirectory } from '../../src/fixture-lab/handoff.mjs';
 import { publicZipStream } from '../../src/fixture-lab/archive.mjs';
 import { createJob, getJob, siteDirectory } from '../../src/fixture-lab/store.mjs';

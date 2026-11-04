@@ -3,9 +3,9 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { After, Given, Then, When, type World } from '@cucumber/cucumber';
-import { validateProject, evaluationGate } from '../../src/pagepilot/config.mjs';
-import { runPipeline, resultStatus } from '../../src/pagepilot/pipeline.mjs';
-import type { PipelineResult } from '../../src/pagepilot/types';
+import { validateProject, evaluationGate } from '../../src/crawl/pagepilot/config.mjs';
+import { runPipeline, resultStatus } from '../../src/crawl/pagepilot/pipeline.mjs';
+import type { PipelineResult } from '../../src/crawl/pagepilot/types';
 
 interface PilotWorld extends World {
   pilotInput: ReturnType<typeof validateProject>;

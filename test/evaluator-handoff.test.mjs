@@ -10,8 +10,8 @@ import { createJob, getJob, jobDirectory, siteDirectory, ownedSite } from '../sr
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { createPlanSnapshot, planDescriptor, planPath } from '../src/fixture-lab/plans.mjs';
 import { answerStream, publicZipStream } from '../src/fixture-lab/archive.mjs';
-import { serve } from '../src/server.mjs';
-import { listFiles } from '../src/artifact-files.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { listFiles } from '../src/site/artifact-files.mjs';
 
 async function withRoot(run) {
   const root = await mkdtemp(join(tmpdir(), 'siteforge-handoff-'));

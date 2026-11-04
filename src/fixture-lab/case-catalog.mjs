@@ -1,6 +1,6 @@
-import { LEGACY_NOISE_TYPES } from '../config.mjs';
+import { LEGACY_NOISE_TYPES } from '../site/config.mjs';
 import { OBSTACLE_CATALOG } from './catalog.mjs';
-import { DOMAINS, PRESETS } from '../presets.mjs';
+import { DOMAINS, PRESETS } from '../site/presets.mjs';
 
 export const CATALOG_VERSION = 1;
 

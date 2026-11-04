@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { buildSiteReview } from '../src/pagepilot/site-review.mjs';
-import { clientReportHtml } from '../src/pagepilot/export.mjs';
+import { buildSiteReview } from '../src/crawl/pagepilot/site-review.mjs';
+import { clientReportHtml } from '../src/crawl/pagepilot/export.mjs';
 import { parse } from 'parse5';
 
 const page = (url, issues = [], extra = {}) => ({ url, title: url, fields: { title: url, author: 'Fictional author' }, issues, ...extra });

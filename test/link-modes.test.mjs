@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generate } from '../src/generator.mjs';
-import { serve } from '../src/server.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { serve } from '../src/preview/server.mjs';
 
 test('all link modes preserve the same private page answers', async () => {
   const root = await mkdtemp(join(tmpdir(), 'siteforge-link-modes-'));

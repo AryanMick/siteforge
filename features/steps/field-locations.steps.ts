@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { Given, When, Then, type World } from '@cucumber/cucumber';
-import { validateConfig } from '../../src/config.mjs';
-import { createModel } from '../../src/model.mjs';
+import { validateConfig } from '../../src/site/config.mjs';
+import { createModel } from '../../src/site/model.mjs';
 
 type Location = { state: string; selector?: string; read?: string; label?: string; precision?: string; reason?: string };
 interface LocationWorld extends World {

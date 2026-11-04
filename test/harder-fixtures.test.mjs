@@ -5,17 +5,17 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import AdmZip from 'adm-zip';
 import { parse } from 'parse5';
-import { validateConfig } from '../src/config.mjs';
+import { validateConfig } from '../src/site/config.mjs';
 import { validateFixtureInput, sitePlan, FIXTURE_DOMAINS } from '../src/fixture-lab/config.mjs';
 import { randomFixtureInput } from '../src/fixture-lab/random.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../src/noise.mjs';
-import { renderPage, finalizePage } from '../src/renderers.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { generate } from '../src/generator.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
+import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { answerJson, downloadName, publicZip } from '../src/fixture-lab/archive.mjs';
-import { walk } from '../src/util.mjs';
+import { walk } from '../src/site/util.mjs';
 
 function built(input = {}) {
   const request = validateFixtureInput({ name: 'Harder behavior', pagesPerSite: 60, seed: 48291, domain: 'library', framework: 'html', noise: 'high', scenario: 'baseline', ...input });

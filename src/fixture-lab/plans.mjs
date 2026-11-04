@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { validateConfig } from '../config.mjs';
-import { hash } from '../util.mjs';
+import { validateConfig } from '../site/config.mjs';
+import { hash } from '../site/util.mjs';
 import { sitePlan } from './config.mjs';
 
 export const planPath = jobDirectory => join(jobDirectory, 'plan.json');

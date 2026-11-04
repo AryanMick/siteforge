@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState, type FormEvent } from 'react';
-import { ArrowDownToLine, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Copy, FileCheck2, FileJson, FlaskConical, Gauge, Globe2, Layers3, ListChecks, LoaderCircle, LockKeyhole, Package, Play, RefreshCw, Search, ShieldCheck, Shuffle, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState, type FormEvent, type InputHTMLAttributes } from 'react';
+import { ArrowDownToLine, ArrowUpRight, Check, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Copy, FileCheck2, FileJson, Gauge, Globe2, Layers3, ListChecks, LoaderCircle, LockKeyhole, Package, Play, RefreshCw, Search, ShieldCheck, Shuffle, SlidersHorizontal, Trash2 } from 'lucide-react';
 import { OBSTACLE_CATALOG, TRANSPORT_CATALOG, LEGACY_SERVER_CATALOG, SCENARIO_LABELS, TRANSPORT_LABELS } from '../src/fixture-lab/catalog.mjs';
 
 const RESPONSE_CATALOG = [...TRANSPORT_CATALOG, ...LEGACY_SERVER_CATALOG];
@@ -26,6 +26,31 @@ const format = (value: number) => value.toLocaleString('en-US');
 const fieldValue = (value: unknown) => typeof value === 'string' ? value : JSON.stringify(value);
 const siteBase = (jobId: string, siteId: string) => `/api/fixtures/${jobId}/sites/${siteId}`;
 const savedRequestTimeout = 12000;
+// A number box that can be cleared while typing (2026-11-04): the text is kept as typed, an empty or partial value
+// reports NaN (so the form shows its error instead of snapping to 0), and leaving an empty box puts back the number
+// it had when you clicked into it.
+type NumberFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'onChange' | 'type'> & { value: number; onValue: (value: number) => void };
+function NumberField({ value, onValue, onBlur, onFocus, ...props }: NumberFieldProps) {
+  const [text, setText] = useState(Number.isFinite(value) ? String(value) : '');
+  const before = useRef(Number.isFinite(value) ? value : 0);
+  useEffect(() => {
+    // Settings changed elsewhere (Randomize, Repeat, the random-pages box) show up in the field.
+    if (Number.isFinite(value) && Number(text) !== value) setText(String(value));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+  return <input {...props} type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" value={text}
+    onFocus={event => { if (Number.isFinite(value)) before.current = value; onFocus?.(event); }}
+    onChange={event => {
+      const next = event.target.value.replace(/[^0-9]/g, '');
+      setText(next);
+      onValue(next === '' ? Number.NaN : Number(next));
+    }}
+    onBlur={event => {
+      if (text === '') { setText(String(before.current)); onValue(before.current); }
+      onBlur?.(event);
+    }} />;
+}
+
 async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: 'no-store', ...options });
   const body = await response.json().catch(() => null);
@@ -70,7 +95,8 @@ export function FixtureLab() {
   // 0 pages means "random page count" (5 to 200 per site, within the 100,000-page budget), as the server treats it.
   const zeroPages = !randomPages && config.pagesPerSite === 0;
   const randomRange = randomPages || zeroPages;
-  const totalPages = config.siteCount * (zeroPages ? Math.min(200, Math.floor(100000 / Math.max(1, config.siteCount))) : config.pagesPerSite);
+  const rawTotalPages = config.siteCount * (zeroPages ? Math.min(200, Math.floor(100000 / Math.max(1, config.siteCount))) : config.pagesPerSite);
+  const totalPages = Number.isFinite(rawTotalPages) ? rawTotalPages : 0; // a box being retyped is empty (NaN) for a moment
   // Measured October 30 2026: realistic page source about 92 KB per page, clean about 27 KB, plus shared assets per site.
   const realisticSource = (config.sourceClutter ?? 'realistic') === 'realistic';
   const diskBytes = (pages: number) => config.siteCount * (realisticSource ? 1_000_000 : 450_000) + pages * (realisticSource ? 92_000 : 27_000);
@@ -257,7 +283,7 @@ export function FixtureLab() {
   return <div className={styles.app}>
     <header className={styles.topbar}>
       <a href="/" className={styles.brand}><Layers3 size={23} strokeWidth={1.7} /><span>SiteForge</span></a>
-      <nav aria-label="Workspace"><span aria-current="page">Test websites</span><a href="/cases"><ListChecks size={16} />Case catalog</a><a href="/test-lab"><FlaskConical size={16} />Test lab<ArrowUpRight size={13} /></a></nav>
+      <nav aria-label="Workspace"><span aria-current="page">Test websites</span></nav>
       <span className={styles.local}><span />Local workspace</span>
     </header>
     <main className={styles.main}>
@@ -276,13 +302,13 @@ export function FixtureLab() {
               <div className={styles.formSection}><h3>Basics</h3><div className={styles.formGrid}>
               <label className={styles.field}>Name<input aria-label="Name" aria-invalid={!validName} aria-describedby={!validName ? 'fixture-name-error' : undefined} required maxLength={80} value={config.name} onChange={event => set('name', event.target.value)} />{!validName && <small id="fixture-name-error" className={styles.fieldError} role="alert">Enter a name.</small>}</label>
               <div className={styles.twoColumns}>
-                <label className={styles.field}>Websites<input aria-label="Websites" aria-invalid={!validSiteCount} aria-describedby={!validSiteCount ? 'fixture-count-error' : undefined} required type="number" min={1} max={500} value={config.siteCount} onChange={event => set('siteCount', Number(event.target.value))} />{!validSiteCount && <small id="fixture-count-error" className={styles.fieldError} role="alert">Enter 1 to 500 websites.</small>}</label>
-                <label className={styles.field}>{randomPages ? 'Max pages per site' : 'Pages per site'}<input aria-label={randomPages ? 'Max pages per site' : 'Pages per site'} aria-invalid={!validPages} aria-describedby={validPages ? 'fixture-pages-hint' : 'fixture-pages-error'} required type="number" min={randomPages ? 5 : 0} max={100000} step={1} value={config.pagesPerSite} onChange={event => set('pagesPerSite', Number(event.target.value))} />{validPages ? <small id="fixture-pages-hint">{randomPages ? `Each site gets a random 5 to ${format(config.pagesPerSite)} pages (lower the max to keep sites smaller); all sites share 100,000 pages` : zeroPages ? `0 = random: each site gets 5 to ${format(totalPages / config.siteCount)} pages` : 'Exactly this many pages per site (5 to 100,000), or 0 for a random count'}</small> : <small id="fixture-pages-error" className={styles.fieldError} role="alert">{randomPages ? 'Use 5 to 100,000 pages.' : 'Use 5 to 100,000 pages, or 0 for a random count.'}</small>}</label>
+                <label className={styles.field}>Websites<NumberField aria-label="Websites" aria-invalid={!validSiteCount} aria-describedby={!validSiteCount ? 'fixture-count-error' : undefined} required value={config.siteCount} onValue={value => set('siteCount', value)} />{!validSiteCount && <small id="fixture-count-error" className={styles.fieldError} role="alert">Enter 1 to 500 websites.</small>}</label>
+                <label className={styles.field}>{randomPages ? 'Max pages per site' : 'Pages per site'}<NumberField aria-label={randomPages ? 'Max pages per site' : 'Pages per site'} aria-invalid={!validPages} aria-describedby={validPages ? 'fixture-pages-hint' : 'fixture-pages-error'} required value={config.pagesPerSite} onValue={value => set('pagesPerSite', value)} />{validPages ? <small id="fixture-pages-hint">{randomPages ? `Each site gets a random 5 to ${format(config.pagesPerSite)} pages (lower the max to keep sites smaller); all sites share 100,000 pages` : zeroPages ? `0 = random: each site gets 5 to ${format(totalPages / config.siteCount)} pages` : 'Exactly this many pages per site (5 to 100,000), or 0 for a random count'}</small> : <small id="fixture-pages-error" className={styles.fieldError} role="alert">{randomPages ? 'Use 5 to 100,000 pages.' : 'Use 5 to 100,000 pages, or 0 for a random count.'}</small>}</label>
               </div>
               <label className={styles.checkbox}><input type="checkbox" checked={randomPages} onChange={event => { const random = event.target.checked; setConfig(previous => ({ ...previous, randomPageCount: random, pagesPerSite: random ? 100000 : defaults.pagesPerSite })); }} />Random page count per site (5 to 100,000)</label>
               <label className={styles.field}>Site type<select value={config.domain} onChange={event => set('domain', event.target.value)}>{domains.map(domain => <option key={domain} value={domain}>{label(domain)}</option>)}</select><small>The kind of organization the fictional site belongs to</small></label>
               <div className={styles.field}><span id="technology-label">Technology</span><div className={styles.segmented} role="group" aria-labelledby="technology-label">{['html', 'react', 'angular', 'mixed', 'random'].map(value => <button key={value} type="button" aria-pressed={config.framework === value} onClick={() => set('framework', value)}>{label(value)}</button>)}</div><small>HTML pages are complete on load; React and Angular pages are built in the browser</small></div>
-              <label className={styles.field}>CMS markup<select value={config.cmsProfile ?? 'none'} onChange={event => set('cmsProfile', event.target.value)}><option value="none">None</option><option value="wordpress">WordPress style</option><option value="drupal">Drupal style</option><option value="joomla">Joomla style</option><option value="squarespace">Squarespace style</option><option value="webflow">Webflow style</option><option value="hubspot">HubSpot style</option><option value="aem">Adobe Experience Manager style</option><option value="sitecore">Sitecore style</option><option value="wix">Wix style</option><option value="shopify">Shopify style</option><option value="ghost">Ghost style</option><option value="random">Random</option></select><small>Adds the platform's typical markup, scripts and headers to the page source. To get real WordPress or Drupal output, install the WP or Drupal download of a site.</small></label>
+              <label className={styles.field}>CMS markup<select value={['none', 'wordpress', 'drupal', 'random'].includes(config.cmsProfile ?? 'none') ? config.cmsProfile ?? 'none' : 'none'} onChange={event => set('cmsProfile', event.target.value)}><option value="none">None (plain HTML)</option><option value="wordpress">WordPress</option><option value="drupal">Drupal</option><option value="random">Random (WordPress or Drupal)</option></select><small>Adds WordPress or Drupal markup, scripts and headers to the page source. To get real WordPress or Drupal output, install the WP or Drupal download of a site.</small></label>
               <div className={styles.field}><span id="noise-label">Markup noise</span><div className={styles.segmented} role="group" aria-labelledby="noise-label">{['clean', 'low', 'medium', 'high', 'mixed', 'random'].map(value => <button key={value} type="button" aria-pressed={config.noise === value} onClick={() => set('noise', value)}>{label(value)}</button>)}</div><small>How much broken or messy HTML is mixed into pages</small></div>
               </div></div>
               <div className={styles.advancedGrid}>
@@ -304,7 +330,7 @@ export function FixtureLab() {
               </div></details>
               <details className={styles.advanced}><summary>Repeatability<ChevronDown size={15} /></summary><div className={styles.advancedBody}>
                 <label className={styles.checkbox}><input type="checkbox" checked={freshSeed} onChange={event => { if (event.target.checked && !seedInRange) set('seed', defaults.seed); setFreshSeed(event.target.checked); }} />New seed every run</label>
-                <label className={styles.field}>Seed<input aria-label="Seed" aria-invalid={!validSeed} aria-describedby={!validSeed ? 'fixture-seed-error' : undefined} required type="number" min={0} max={4294967295} step={1} disabled={freshSeed} value={config.seed} onChange={event => set('seed', Number(event.target.value))} />{!validSeed && <small id="fixture-seed-error" className={styles.fieldError} role="alert">Enter 0 to 4,294,967,295.</small>}</label>
+                <label className={styles.field}>Seed<NumberField aria-label="Seed" aria-invalid={!validSeed} aria-describedby={!validSeed ? 'fixture-seed-error' : undefined} required disabled={freshSeed} value={config.seed} onValue={value => set('seed', value)} />{!validSeed && <small id="fixture-seed-error" className={styles.fieldError} role="alert">Enter 0 to 4,294,967,295.</small>}</label>
               </div></details></div>
             </fieldset>
             <div className={styles.createFoot}><div><div className={styles.total}><span>Estimated pages</span><strong>{randomRange ? `${format(config.siteCount * 5)}-${format(Math.min(100000, totalPages))}` : format(totalPages)}</strong></div>

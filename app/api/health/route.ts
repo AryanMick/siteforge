@@ -1,5 +1,5 @@
-import { serverIdentity } from '@/pagepilot/server-identity.mjs';
-import { apiError, json, localOnly } from '@/pagepilot/http';
+import { serverIdentity } from '@/crawl/pagepilot/server-identity.mjs';
+import { apiError, json, localOnly } from '@/crawl/pagepilot/http';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';

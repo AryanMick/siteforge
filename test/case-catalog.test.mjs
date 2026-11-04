@@ -3,13 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { validateConfig, LEGACY_NOISE_TYPES, NOISE_TYPES } from '../src/config.mjs';
-import { generate } from '../src/generator.mjs';
+import { validateConfig, LEGACY_NOISE_TYPES, NOISE_TYPES } from '../src/site/config.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise } from '../src/noise.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
-import { DOMAINS } from '../src/presets.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise } from '../src/noise/noise.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
+import { DOMAINS } from '../src/site/presets.mjs';
 import { OBSTACLE_CATALOG, TRANSPORT_CATALOG } from '../src/fixture-lab/catalog.mjs';
 import {
   ALL_CASE_PROFILES, CATALOG_SETTINGS, CATALOG_VERSION, CASE_PROFILES, CORE_CASE_COUNT, REAL_WORLD_PROFILES, TOTAL_CASE_COUNT,

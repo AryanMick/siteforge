@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { Given, Then, When, type World } from '@cucumber/cucumber';
-import { evaluate } from '../../src/evaluator.mjs';
+import { evaluate } from '../../src/answers/evaluator.mjs';
 
 function goldPage(url: string, cluster: string) {
   return { url, pageId: url, expectedCluster: cluster, contentType: cluster, fields: { title: url }, canonicalValues: { title: url }, fieldStates: { title: 'present' }, relationships: [], noiseEvents: [] };

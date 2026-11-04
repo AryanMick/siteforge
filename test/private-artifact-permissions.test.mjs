@@ -11,7 +11,7 @@ test('new private artifacts stay owner-only even with a permissive process umask
   t.after(async () => rm(root, { recursive: true, force: true }));
   const script = `
     import assert from 'node:assert/strict';
-    import { generate } from ${JSON.stringify(new URL('../src/generator.mjs', import.meta.url).href)};
+    import { generate } from ${JSON.stringify(new URL('../src/site/generator.mjs', import.meta.url).href)};
     process.umask(0);
     const input = { site: { id: 'private-permissions', pageCount: 5 } };
     await generate(input, process.argv[1] + '/complete');

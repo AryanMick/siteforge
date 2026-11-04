@@ -1,8 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
-import { crawlSite } from '../src/real-crawler.mjs';
-import { projectInput } from '../src/pagepilot/config.mjs';
+import { crawlSite } from '../src/crawl/real-crawler.mjs';
+import { projectInput } from '../src/crawl/pagepilot/config.mjs';
 
 const html = body => `<!doctype html><html><head><title>Capacity</title></head><body><h1>Capacity</h1>${body}</body></html>`;
 

@@ -1,6 +1,6 @@
 import { mkdir, readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { loadPlanSnapshot } from '../src/fixture-lab/plans.mjs';
 import { atomicJson, claimBatch, directoryBytes, jobDirectory, releaseBatch, saveJob, siteDirectory, validUuid } from '../src/fixture-lab/store.mjs';
 import { handoffDirectory, publishSiteHandoff } from '../src/fixture-lab/handoff.mjs';

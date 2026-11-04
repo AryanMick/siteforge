@@ -4,10 +4,10 @@ import { mkdtemp, readFile, rm, stat } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import * as parse5 from 'parse5';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { PLATFORM_PROFILES, platformHeaders } from '../src/platforms.mjs';
-import { walk, attr } from '../src/util.mjs';
+import { PLATFORM_PROFILES, platformHeaders } from '../src/pages/platforms.mjs';
+import { walk, attr } from '../src/site/util.mjs';
 
 const FINGERPRINTS = {
   joomla: [/<meta name="generator" content="Joomla! - Open Source Content Management">/, /class="joomla-script-options new"/, /\/media\/system\/js\/core\.min\.js\?/, /com_content/, /id="system-message-container"/],

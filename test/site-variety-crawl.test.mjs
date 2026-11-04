@@ -4,15 +4,15 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse } from 'parse5';
-import { validateConfig } from '../src/config.mjs';
+import { validateConfig } from '../src/site/config.mjs';
 import { validateFixtureInput, sitePlan } from '../src/fixture-lab/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { generate } from '../src/generator.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { serve } from '../src/server.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
-import { textContent, walk } from '../src/util.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
+import { textContent, walk } from '../src/site/util.mjs';
 
 function varied(seed, pagesPerSite = 60) {
   const input = validateFixtureInput({ name: 'Varied crawl fixture', seed, pagesPerSite, randomness: 100,

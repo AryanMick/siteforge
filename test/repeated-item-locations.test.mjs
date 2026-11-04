@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise } from '../src/noise.mjs';
-import { planRepeatedItemLocations } from '../src/repeated-item-locations.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { buildTransportPlan } from '../src/transport.mjs';
-import { renderPage } from '../src/renderers.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise } from '../src/noise/noise.mjs';
+import { planRepeatedItemLocations } from '../src/answers/repeated-item-locations.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { buildTransportPlan } from '../src/noise/transport.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
 
 const schema = [
   { name: 'publicationDate', type: 'date', optional: false },

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { describeCrawl } from '../src/pagepilot/crawl-summary.mjs';
+import { describeCrawl } from '../src/crawl/pagepilot/crawl-summary.mjs';
 
 test('page limits are explained as partial sampling even without a global stop reason', () => {
   const result = describeCrawl({ crawl: { analyzed: 3, counts: { unattempted: 12 }, stopReason: null, allEligibleAnalyzed: false }, outcomes: [{ state: 'unattempted', reason: 'page_budget' }] });

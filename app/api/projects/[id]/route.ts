@@ -1,6 +1,6 @@
-import { projectDetail, updateProject } from '@/pagepilot/store.mjs';
-import { validateProject } from '@/pagepilot/config.mjs';
-import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/pagepilot/http';
+import { projectDetail, updateProject } from '@/crawl/pagepilot/store.mjs';
+import { validateProject } from '@/crawl/pagepilot/config.mjs';
+import { apiError, bodyJson, HttpError, json, localOnly, validId } from '@/crawl/pagepilot/http';
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {

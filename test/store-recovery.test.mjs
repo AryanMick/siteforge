@@ -4,7 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { mkdtemp, mkdir, readFile, rm, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { listJobsWithDiagnostics, PREVIEW_LIFETIME_MS, previewRecord, previewSite } from '../src/fixture-lab/store.mjs';
 

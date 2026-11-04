@@ -4,9 +4,9 @@ import { execFileSync } from 'node:child_process';
 import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { generate } from '../src/generator.mjs';
+import { generate } from '../src/site/generator.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { cmsContent, cmsPackageEntries, decodeRuns, splitPage, packagePageHtml, ORIGIN_PLACEHOLDER } from '../src/cms-theme.mjs';
+import { cmsContent, cmsPackageEntries, decodeRuns, splitPage, packagePageHtml, ORIGIN_PLACEHOLDER } from '../src/cms/cms-theme.mjs';
 import { downloadName } from '../src/fixture-lab/archive.mjs';
 
 const plan = (domain, cmsProfile, framework, noise, seed, linkMode) => sitePlan({ name: 'Theme', domain, pagesPerSite: 24, seed, visualStyle: 'modern', randomness: 50, cmsProfile, noise, framework, sourceClutter: 'realistic', optionalFields: true, ...(linkMode ? { linkMode } : {}) }, 0);

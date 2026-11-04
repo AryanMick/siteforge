@@ -151,7 +151,7 @@ export async function createJob(input, { freshSeed = false, resolveSeed } = {}) 
     job.planSnapshot = planDescriptor(snapshot);
     await atomicJson(planPath(jobDirectory(id)), snapshot);
     await saveJob(job);
-    const child = spawn(process.execPath, [resolve('scripts/fixture-worker.mjs'), id], { cwd: process.cwd(), env: { ...process.env, FIXTURE_LAB_DATA_DIR: fixtureRoot() }, detached: true, stdio: 'ignore', shell: false });
+    const child = spawn(process.execPath, [resolve('scripts/fixture-worker.mjs'), id], { cwd: process.cwd(), env: { ...process.env, FIXTURE_LAB_DATA_DIR: fixtureRoot() }, detached: true, windowsHide: true, stdio: 'ignore', shell: false });
     await new Promise((accept, reject) => { child.once('spawn', accept); child.once('error', reject); });
     await atomicJson(workerPath(id), { pid: child.pid, startedAt: createdAt }); child.unref();
     return job;
@@ -251,7 +251,7 @@ export async function previewSite(jobId, siteId) {
       if (match && await healthyPreview(await readRecentPreview(join(previewDirectory(), file)), siteDirectory(match[1], match[2]))) active++;
     }
     if (active >= 5) throw new Error('Five fixture previews are already running');
-    const child = spawn(process.execPath, [resolve('scripts/fixture-preview.mjs'), owned.directory, path], { cwd: process.cwd(), env: { ...process.env, FIXTURE_LAB_DATA_DIR: fixtureRoot() }, detached: true, stdio: 'ignore', shell: false });
+    const child = spawn(process.execPath, [resolve('scripts/fixture-preview.mjs'), owned.directory, path], { cwd: process.cwd(), env: { ...process.env, FIXTURE_LAB_DATA_DIR: fixtureRoot() }, detached: true, windowsHide: true, stdio: 'ignore', shell: false });
     await new Promise((accept, reject) => { child.once('spawn', accept); child.once('error', reject); }); child.unref();
     const deadline = Date.now() + 10000;
     while (Date.now() < deadline) { const record = await readPreviewJson(path); if (record?.pid === child.pid && await healthyPreview(record, owned.directory)) return { url: record.url }; await new Promise(resolvePromise => setTimeout(resolvePromise, 50)); }

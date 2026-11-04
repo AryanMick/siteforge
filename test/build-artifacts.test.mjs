@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { assertNoRuntimeArtifacts } from '../scripts/check-runtime-artifacts.mjs';
+import { assertNoRuntimeArtifacts } from '../scripts/checks/check-runtime-artifacts.mjs';
 
 test('production privacy checker rejects known answer-key leaks and invalid traces', () => {
   const root = '/example/project';

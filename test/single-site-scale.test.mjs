@@ -6,11 +6,11 @@ import { join } from 'node:path';
 import AdmZip from 'adm-zip';
 import { sitePlan, validateFixtureInput, totalPlannedPages } from '../src/fixture-lab/config.mjs';
 import { randomFixtureInput } from '../src/fixture-lab/random.mjs';
-import { generate } from '../src/generator.mjs';
-import { createModel } from '../src/model.mjs';
-import { validateConfig } from '../src/config.mjs';
-import { jsonChunks, hashJson, writeJsonArtifact, hashFile } from '../src/json-artifacts.mjs';
-import { hash } from '../src/util.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { jsonChunks, hashJson, writeJsonArtifact, hashFile } from '../src/site/json-artifacts.mjs';
+import { hash } from '../src/site/util.mjs';
 import { inspectAnswers, inspectionQuery } from '../src/fixture-lab/answer-inspection.mjs';
 import { publicZipStream, answerStream } from '../src/fixture-lab/archive.mjs';
 

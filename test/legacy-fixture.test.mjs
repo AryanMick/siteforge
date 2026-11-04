@@ -4,10 +4,10 @@ import { mkdtemp, readFile, readdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse } from 'parse5';
-import { createLegacyFixture } from '../src/legacy-fixture.mjs';
-import { auditLocalContrast } from '../src/contrast-audit.mjs';
-import { serve } from '../src/server.mjs';
-import { walk, attr, textContent } from '../src/util.mjs';
+import { createLegacyFixture } from '../src/noise/legacy-fixture.mjs';
+import { auditLocalContrast } from '../src/site/contrast-audit.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { walk, attr, textContent } from '../src/site/util.mjs';
 
 test('fixture is complete, private, structurally varied, and refuses an existing root', async (t) => {
   const parent = await mkdtemp(join(tmpdir(), 'siteforge-legacy-unit-'));

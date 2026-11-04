@@ -1,5 +1,5 @@
 import { createServer } from 'node:http';
-import { createFixtureHandler } from '../server.mjs';
+import { createFixtureHandler } from '../preview/server.mjs';
 import { ownedSite, validSiteId, validUuid } from './store.mjs';
 
 const suffix = '.siteforge.test';

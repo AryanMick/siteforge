@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { randomFixtureInput, randomRequestSchema } from '../src/fixture-lab/random.mjs';
 import { sitePlan } from '../src/fixture-lab/config.mjs';
-import { validateConfig } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
+import { validateConfig } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
 
 test('random website requests are bounded and deterministic after saving the seed', () => {
   const variations = new Set();

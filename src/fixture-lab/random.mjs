@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { seedFor } from '../util.mjs';
+import { seedFor } from '../site/util.mjs';
 import { FIXTURE_DOMAINS, FIELD_LAYOUTS, validateFixtureInput } from './config.mjs';
 
 export const randomRequestSchema = z.object({

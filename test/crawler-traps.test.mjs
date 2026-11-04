@@ -7,18 +7,18 @@ import { gunzipSync } from 'node:zlib';
 import { request } from 'node:http';
 import { parse } from 'parse5';
 import robotsParser from 'robots-parser';
-import { validateConfig, CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES, NOISE_TYPES } from '../src/config.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../src/noise.mjs';
-import { renderPage, finalizePage } from '../src/renderers.mjs';
-import { validateAnswerKey } from '../src/answer-key.mjs';
-import { buildTransportPlan, LEGACY_SERVER_TYPES, validateTransportPlan } from '../src/transport.mjs';
-import { generate } from '../src/generator.mjs';
-import { serve } from '../src/server.mjs';
+import { validateConfig, CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES, NOISE_TYPES } from '../src/site/config.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
+import { renderPage, finalizePage } from '../src/pages/renderers.mjs';
+import { validateAnswerKey } from '../src/answers/answer-key.mjs';
+import { buildTransportPlan, LEGACY_SERVER_TYPES, validateTransportPlan } from '../src/noise/transport.mjs';
+import { generate } from '../src/site/generator.mjs';
+import { serve } from '../src/preview/server.mjs';
 import { sitePlan, validateFixtureInput } from '../src/fixture-lab/config.mjs';
 import { LEGACY_SERVER_CATALOG, OBSTACLE_CATALOG, OPT_IN_SCENARIOS, SCENARIO_LABELS, TRANSPORT_LABELS } from '../src/fixture-lab/catalog.mjs';
-import { RESOURCE_ONLY_TRAP_TYPES, SCRIPT_TRAP_TYPES, TRAP_GROUPS, TRAP_SCENARIOS, stripSessionPath, trapDetails, trapGroup } from '../src/crawler-traps.mjs';
-import { attr, escapeHtml, walk } from '../src/util.mjs';
+import { RESOURCE_ONLY_TRAP_TYPES, SCRIPT_TRAP_TYPES, TRAP_GROUPS, TRAP_SCENARIOS, stripSessionPath, trapDetails, trapGroup } from '../src/noise/crawler-traps.mjs';
+import { attr, escapeHtml, walk } from '../src/site/util.mjs';
 
 const PUBLIC_NOISE_LABELS = new RegExp(NOISE_TYPES.map(type => `\\b${type}\\b`).join('|'));
 const PRIVATE_TERMS = /expectedCluster|canonicalValues|noiseEvents|ground-truth|answer-key/;
@@ -454,8 +454,8 @@ test('the legacy-server profile plans and serves every documented response condi
 });
 
 test('legacy-server answers by user agent: bot pre-rendering and firewall blocking', async () => {
-  const { generate } = await import('../src/generator.mjs');
-  const { serve } = await import('../src/server.mjs');
+  const { generate } = await import('../src/site/generator.mjs');
+  const { serve } = await import('../src/preview/server.mjs');
   const { mkdtemp, rm, readFile } = await import('node:fs/promises');
   const { tmpdir } = await import('node:os');
   const { join } = await import('node:path');

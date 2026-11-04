@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { parse } from 'parse5';
-import { serve } from '../src/server.mjs';
+import { serve } from '../src/preview/server.mjs';
 
 const sourceOrigin = 'http://site-001-library.siteforge.test';
 const encodedPayload = value => JSON.stringify(value)

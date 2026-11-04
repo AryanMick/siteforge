@@ -1,5 +1,5 @@
-import { updateLabels } from '@/pagepilot/store.mjs';
-import { apiError, bodyJson, json, localOnly, validId } from '@/pagepilot/http';
+import { updateLabels } from '@/crawl/pagepilot/store.mjs';
+import { apiError, bodyJson, json, localOnly, validId } from '@/crawl/pagepilot/http';
 export const runtime = 'nodejs';
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string; runId: string }> }) {
   try {

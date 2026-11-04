@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { runPipeline, resultStatus } from '../src/pagepilot/pipeline.mjs';
-import { checkId, claimRun, runDirectory, releaseLock, saveRun, ownsLock, stopRequested } from '../src/pagepilot/store.mjs';
+import { runPipeline, resultStatus } from '../src/crawl/pagepilot/pipeline.mjs';
+import { checkId, claimRun, runDirectory, releaseLock, saveRun, ownsLock, stopRequested } from '../src/crawl/pagepilot/store.mjs';
 
 const id = checkId(process.argv[2]);
 const run = await claimRun(id);

@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import { Given, When, Then, type World } from '@cucumber/cucumber';
-import { validateConfig } from '../../src/config.mjs';
-import { createModel } from '../../src/model.mjs';
-import { applyDataNoise } from '../../src/noise.mjs';
+import { validateConfig } from '../../src/site/config.mjs';
+import { createModel } from '../../src/site/model.mjs';
+import { applyDataNoise } from '../../src/noise/noise.mjs';
 
 type ModelPage = ReturnType<typeof createModel>['pages'][number];
 type Location = { state: 'present'; selector: string; read: string; precision: string; label?: string }

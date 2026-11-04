@@ -7,15 +7,15 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parse } from 'parse5';
-import { validateConfig, PROFILES } from '../src/config.mjs';
-import { presetConfig, DOMAINS } from '../src/presets.mjs';
-import { createModel } from '../src/model.mjs';
-import { applyDataNoise, applyHtmlNoise } from '../src/noise.mjs';
-import { generate, listFiles } from '../src/generator.mjs';
-import { serve } from '../src/server.mjs';
-import { crawl, extractPublicPage } from '../src/crawler.mjs';
-import { renderPage } from '../src/renderers.mjs';
-import { walk, textContent, hash } from '../src/util.mjs';
+import { validateConfig, PROFILES } from '../src/site/config.mjs';
+import { presetConfig, DOMAINS } from '../src/site/presets.mjs';
+import { createModel } from '../src/site/model.mjs';
+import { applyDataNoise, applyHtmlNoise } from '../src/noise/noise.mjs';
+import { generate, listFiles } from '../src/site/generator.mjs';
+import { serve } from '../src/preview/server.mjs';
+import { crawl, extractPublicPage } from '../src/crawl/crawler.mjs';
+import { renderPage } from '../src/pages/renderers.mjs';
+import { walk, textContent, hash } from '../src/site/util.mjs';
 
 const execFileAsync = promisify(execFile);
 
