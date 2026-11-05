@@ -16,7 +16,7 @@ import { attr, textContent, walk } from '../src/site/util.mjs';
 // Every page loads the site's own behaviour script (and the search page its index; src/render/site-runtime.mjs); markup
 // operators must add no other script.
 const withoutRuntime = html => html.replace(/<script\b[^>]*assets\/(site-actions|search-index)\.js[^>]*><\/script>\s*/gi, '');
-const NEW_TYPES = ['comment-clutter', 'hidden-boilerplate', 'duplicate-heading', 'nested-layout-table', 'link-variants', 'broken-image', 'conflicting-metadata', 'obsolete-markup', 'missing-main', 'legacy-document', 'image-missing-alt', 'onclick-navigation', 'javascript-only-link', 'deep-wrapper-tree', 'frame-missing-title', 'legacy-color-attribute', 'shortcode-residue', 'split-text-runs', 'entity-encoded-text', 'uppercase-legacy-tags', 'microdata-attributes', 'inline-svg-icons', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements'];
+const NEW_TYPES = ['comment-clutter', 'hidden-boilerplate', 'duplicate-heading', 'nested-layout-table', 'link-variants', 'broken-image', 'conflicting-metadata', 'obsolete-markup', 'missing-main', 'legacy-document', 'image-missing-alt', 'onclick-navigation', 'javascript-only-link', 'deep-wrapper-tree', 'frame-missing-title', 'legacy-color-attribute', 'shortcode-residue', 'split-text-runs', 'entity-encoded-text', 'uppercase-legacy-tags', 'microdata-attributes', 'inline-svg-icons', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements', 'builder-modules'];
 // Markup operators only: crawler traps may emit scripts and non-local hrefs and have their own contract in crawler-traps.test.mjs.
 const HTML_TYPES = MARKUP_NOISE_TYPES.filter(type => type !== 'delayed-content');
 const PRIVATE_TERMS = /expectedCluster|canonicalValues|noiseEvents|ground-truth|pageId/;
@@ -156,6 +156,13 @@ function assertOperator(type, cleanHtml, noisyHtml, canonical) {
   if (type === 'hidden-reader-copy') assert(classNodes(noisy, 'sr-only').length >= 1);
   if (type === 'analytics-beacon') assert(walk(noisy, node => node.tagName === 'img' && attr(node, 'width') === '1' && /beacon=\d+/.test(attr(node, 'src') ?? '')).length >= 1);
   if (type === 'spacer-elements') assert.match(noisyHtml, /<p>&nbsp;<\/p><p><\/p>/i);
+  if (type === 'builder-modules') {
+    // Severity 3 adds all four modules; none of them carries a record field, so the field list is untouched.
+    assert.equal(classNodes(noisy, 'content-module').length, 4, 'photo, button, audio player and slider');
+    assert.equal(walk(noisy, node => node.tagName === 'audio').length, 1);
+    assert.equal(classNodes(noisy, 'field-list').length, classNodes(clean, 'field-list').length, 'field list unchanged');
+    assert.equal(fieldText(noisy), fieldText(clean), 'field text unchanged');
+  }
   if (type === 'shortcode-residue') {
     const residue = classNodes(noisy, 'legacy-content')[0];
     assert(residue, 'leftover shortcode block');
@@ -199,6 +206,7 @@ function assertPairEffect(type, html, canonical) {
   if (type === 'hidden-reader-copy') assert(classNodes(doc, 'sr-only').length >= 1);
   if (type === 'analytics-beacon') assert(classNodes(doc, 'tracking-pixel').length >= 1);
   if (type === 'spacer-elements') assert.match(html, /<p>&nbsp;<\/p><p><\/p>/i);
+  if (type === 'builder-modules') assert(classNodes(doc, 'content-module').length >= 1);
 }
 
 for (const type of NEW_TYPES) {

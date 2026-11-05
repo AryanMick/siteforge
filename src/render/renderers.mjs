@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { deflateSync } from 'node:zlib';
 import * as parse5 from 'parse5';
 import { seedFor } from '../site/util.mjs';
+import { builderSampleWav } from '../noise/builder-modules.mjs';
 import { isPlatform, platformFooterAttrs, platformHeaderAttrs, platformAssetBody, platformAssetPaths, platformBeforeMain, platformBodyAttrs, platformBodyClasses, platformBodyEnd, platformBodyStart, platformContent, platformHead, platformHtmlAttrs, platformLang, platformTitleSeparator } from './platforms.mjs';
 import { MEDIA_POOL, hasIllustration, illustrationPng } from '../site/illustrations.mjs';
 import { siteLook } from './site-look.mjs';
@@ -906,6 +907,13 @@ export async function prepareAssets(site, publicDir) {
     tasks.push(mkdir(join(assetsDir, 'media'), { recursive: true }).then(() => Promise.all([
       ...Array.from({ length: MEDIA_POOL.scenes }, (_, i) => writeFile(join(assetsDir, 'media', `${site.domain}-${i + 1}.png`), illustrationPng(site.domain, `${site.seed}:media:${i}`))),
       ...Array.from({ length: MEDIA_POOL.portraits }, (_, i) => writeFile(join(assetsDir, 'media', `portrait-${i + 1}.png`), illustrationPng('portrait', `${site.seed}:portrait:${i}`))),
+    ])));
+  }
+  if (site.noise?.types?.includes('builder-modules')) {
+    // Local files for the page-builder module noise (src/noise/builder-modules.mjs): a decoy photo and an audio clip.
+    tasks.push(mkdir(join(assetsDir, 'media'), { recursive: true }).then(() => Promise.all([
+      writeFile(join(assetsDir, 'media', 'builder-photo.png'), hasIllustration(site.domain) ? illustrationPng(site.domain, `${site.seed}:builder`) : collectionPng(`${site.domain}:${site.seed}:builder`, site.domain)),
+      writeFile(join(assetsDir, 'media', 'builder-sample.wav'), builderSampleWav()),
     ])));
   }
   if (site.sourceClutter === 'realistic' && CHROME[site.domain]) {

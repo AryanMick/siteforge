@@ -9,7 +9,11 @@ export const DEFAULT_NOISE_TYPES = ['extra-wrapper', 'class-churn', 'inline-styl
 export const LEGACY_NOISE_TYPES = [...DEFAULT_NOISE_TYPES, 'comment-clutter', 'hidden-boilerplate', 'duplicate-heading', 'nested-layout-table', 'link-variants', 'broken-image', 'conflicting-metadata', 'obsolete-markup'];
 export const MARKUP_NOISE_TYPES = [...LEGACY_NOISE_TYPES, 'missing-main', 'legacy-document', 'image-missing-alt', 'onclick-navigation', 'javascript-only-link', 'deep-wrapper-tree', 'frame-missing-title', 'legacy-color-attribute', 'shortcode-residue',
   // 2026-11-02: eight more operators (text runs, character references, legacy tag case, microdata, icons, screen-reader text, beacons, spacers).
-  'split-text-runs', 'entity-encoded-text', 'uppercase-legacy-tags', 'microdata-attributes', 'inline-svg-icons', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements'];
+  'split-text-runs', 'entity-encoded-text', 'uppercase-legacy-tags', 'microdata-attributes', 'inline-svg-icons', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements',
+  // 2026-11-05: page-builder modules (photo, button, audio player, content slider) added beside the page content.
+  'builder-modules'];
+// Markup operators that are valid in noise.types but left out of the default "baseline" scenario, so existing seeds keep building the same sites.
+export const OPT_IN_NOISE_TYPES = ['builder-modules'];
 // Crawler traps expand the URL space a crawler sees, so they are opt-in (crawler-traps scenario or explicit noise.types).
 export { CRAWLER_TRAP_TYPES };
 export const NOISE_TYPES = [...MARKUP_NOISE_TYPES, ...CRAWLER_TRAP_TYPES];

@@ -9,7 +9,7 @@ import { validateTransportPlan } from '../noise/transport.mjs';
 import { enabledServerTraps, rewriteTrapPath, trapRouteResponse } from '../noise/crawler-traps.mjs';
 
 const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.xml', '.txt', '.json', '.svg', '.webmanifest']);
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.htm': 'text/html', '.rss': 'application/rss+xml; charset=utf-8', '.gz': 'application/gzip' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.wav': 'audio/wav', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.htm': 'text/html', '.rss': 'application/rss+xml; charset=utf-8', '.gz': 'application/gzip' };
 // Only URLs on the fixture's own source origin are rebased, so deliberate wrong-host entries stay wrong.
 function sameOrigin(value, sourceOrigin) { try { return !sourceOrigin || new URL(value).origin === sourceOrigin; } catch { return false; } }
 function rebaseSitemap(source, origin, sourceOrigin) { return source.replace(/<loc>([^<]+)<\/loc>/g, (match, value) => sameOrigin(value, sourceOrigin) ? `<loc>${previewUrl(value, origin)}</loc>` : match); }

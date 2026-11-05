@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { DOMAINS, PRESETS } from '../site/presets.mjs';
-import { CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES } from '../site/config.mjs';
+import { CRAWLER_TRAP_TYPES, MARKUP_NOISE_TYPES, OPT_IN_NOISE_TYPES } from '../site/config.mjs';
 import { TRAP_SCENARIOS } from '../noise/crawler-traps.mjs';
 import { OPT_IN_SCENARIOS, OPT_IN_TRANSPORT, SCENARIO_LABELS, TRANSPORT_LABELS } from './catalog.mjs';
 import { CATALOG_SETTINGS, buildCatalogSiteConfig, getCatalogCase, listCatalogCases } from './case-catalog.mjs';
@@ -175,7 +175,7 @@ export function sitePlan(input, index) {
     }
     return type;
   });
-  const noiseTypes = (scenario === 'baseline' ? MARKUP_NOISE_TYPES : SCENARIO_NOISE[scenario])
+  const noiseTypes = (scenario === 'baseline' ? MARKUP_NOISE_TYPES.filter(type => !OPT_IN_NOISE_TYPES.includes(type)) : SCENARIO_NOISE[scenario])
     .filter(type => type !== 'delayed-content' || framework !== 'html')
     .filter(type => type !== 'missing-main' || framework === 'html');
   return {
