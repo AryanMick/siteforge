@@ -89,7 +89,9 @@ MySQL or Docker: WordPress Playground runs WordPress inside Node.js.
    builder).
 3. Press **Push** next to a site.
 4. Open **/wp-admin** (http://127.0.0.1:9400/wp-admin/, user `admin`, password `password`). The menu shows the site's
-   content types, such as **Books**, **Authors** and **Events**, each with its fields as columns.
+   content types, such as **Books**, **Authors** and **Events**, each with its fields as columns. Typing
+   http://127.0.0.1:4400/wp-admin works too: it opens the WordPress dashboard, or a **Start WordPress** button if
+   WordPress is stopped.
 
 What the push does:
 

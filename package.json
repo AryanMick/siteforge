@@ -21,7 +21,7 @@
     "test:generator-recovery": "node scripts/checks/check-fixture-lab-recovery.mjs",
     "test:generator-navigation": "node scripts/checks/check-fixture-lab-navigation.mjs",
     "test:generator-redesign": "node scripts/checks/check-fixture-redesign.mjs",
-    "test:generator-api": "node --import tsx --test test/fixture-lab-routes.test.ts test/evaluator-handoff-route.test.ts test/request-security.test.ts",
+    "test:generator-api": "node --import tsx --test test/fixture-lab-routes.test.ts test/evaluator-handoff-route.test.ts test/request-security.test.ts test/wp-admin-route.test.ts",
     "test:field-locations": "node scripts/checks/check-field-locations.mjs",
     "test:realistic-locations": "node scripts/checks/check-realistic-locations.mjs",
     "test:cms-theme": "node scripts/checks/check-cms-theme.mjs",

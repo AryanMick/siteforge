@@ -306,6 +306,8 @@ foreach (array('elementor/elementor.php', ${phpString(importerPlugin)}) as $plug
 \t\t$report['plugins'][$plugin] = 'error: ' . $error->getMessage();
 \t}
 }
+// Elementor sends the first admin page after activation to its sign-up wizard; skip that so /wp-admin/ is the dashboard.
+delete_transient('elementor_activation_redirect');
 $report['wordpressVersion'] = get_bloginfo('version');
 $report['theme'] = get_stylesheet();
 $report['permalinkStructure'] = get_option('permalink_structure');
