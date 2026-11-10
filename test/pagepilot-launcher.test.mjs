@@ -168,7 +168,7 @@ test('CLI starts a healthy background server and a second launch reuses the same
   assert.equal(await probeServer(`http://127.0.0.1:${first.port}`, await serverIdentity(root, 'development')), true);
   const second = await execute(process.execPath, [script, '--background'], { timeout: 10000 });
   assert.match(second.stdout, /Reusing the existing server/);
-  assert.doesNotMatch(second.stdout, /Starting PagePilot/);
+  assert.doesNotMatch(second.stdout, /Starting SiteForge/);
   assert.equal(JSON.parse(await readFile(join(root, '.next/dev/lock'), 'utf8')).pid, first.pid);
 });
 

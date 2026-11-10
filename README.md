@@ -9,13 +9,21 @@ boston.gov, but no real content is copied.
 
 ## Run it
 
-You need [Node.js 24](https://nodejs.org).
+You need [Node.js 24](https://nodejs.org). Then, in a terminal:
 
-- **Mac:** double-click `Open SiteForge.command`.
-- **Windows:** double-click `Open SiteForge.bat`.
-- **Any system:** run `npm install` once, then `npm run siteforge`.
+```bash
+git clone https://github.com/AryanMick/siteforge.git
+cd siteforge
+npm start
+```
 
-The app opens at http://127.0.0.1:4400. It runs on your computer only. Closing the window stops it.
+The first start installs everything (a few minutes). Then the app opens in your browser at http://127.0.0.1:4400. It
+runs on your computer only. Press Ctrl+C or close the terminal to stop it. Next time, run `npm start` in the same
+folder.
+
+No Git? Press **Code → Download ZIP** on GitHub, unzip it, and double-click `Open SiteForge.command` (Mac) or
+`Open SiteForge.bat` (Windows). The first time, macOS may say it can't check the file: open **System Settings →
+Privacy & Security** and press **Open Anyway**.
 
 ## Make a test set
 

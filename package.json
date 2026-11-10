@@ -36,7 +36,7 @@
     "catalog:run": "node scripts/tools/run-case-catalog.mjs",
     "dev": "next dev --hostname 127.0.0.1 --port 4400",
     "build": "next build --webpack && node scripts/checks/check-runtime-artifacts.mjs",
-    "start": "next start --hostname 127.0.0.1 --port 4400",
+    "start": "node scripts/start-siteforge.mjs --open",
     "typecheck": "tsc --noEmit",
     "test:bdd": "cucumber-js --config config/cucumber.mjs",
     "test:mutation": "stryker run config/stryker.config.mjs",
