@@ -9,6 +9,8 @@ outputs/
 .pagepilot/
 .fixture-lab/
 .wordpress/
+.wordpress-docker/
+docker/.env
 .stryker-tmp/
 reports/
 *.tsbuildinfo

@@ -1,0 +1,61 @@
+# A real WordPress (Apache + PHP 8.3 + MySQL) for SiteForge test sites. Started and driven by scripts/wordpress-docker.mjs
+# (npm run wordpress:docker -- up). Settings come from docker/.env (copy docker/.env.example); every value has a default.
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wordpress}
+      MYSQL_USER: ${MYSQL_USER:-wordpress}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$$MYSQL_ROOT_PASSWORD\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+
+  wordpress:
+    image: wordpress:6-php8.3-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      # Loopback only: this is a test site, and the admin password is a known default.
+      - "127.0.0.1:${SITEFORGE_WP_DOCKER_PORT:-8080}:80"
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
+    volumes:
+      - wp_data:/var/www/html
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1/wp-login.php || curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1/ | grep -q '^[23]'"]
+      interval: 5s
+      timeout: 5s
+      retries: 60
+
+  # WP-CLI, run on demand by the script (docker compose run --rm wpcli ...). It shares WordPress's files and database.
+  # /import holds the theme package the script builds on the host.
+  wpcli:
+    image: wordpress:cli-php8.3
+    profiles: ["tools"]
+    user: "33:33"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_NAME: ${MYSQL_DATABASE:-wordpress}
+      WORDPRESS_DB_USER: ${MYSQL_USER:-wordpress}
+      WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
+    volumes:
+      - wp_data:/var/www/html
+      - ../.wordpress-docker/import:/import:ro
+    working_dir: /var/www/html
+
+volumes:
+  db_data:
+  wp_data:

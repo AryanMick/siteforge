@@ -118,6 +118,21 @@ The same works on any other WordPress: install the plugin in `wordpress/siteforg
 Elementor). The local WordPress keeps its files and database in `.wordpress/` (about 260 MB). Delete `.wordpress/site/`
 to start again with an empty WordPress.
 
+### WordPress in Docker (draft)
+
+An alternative to the Playground WordPress above: a real WordPress, PHP and MySQL in Docker, with a generated site loaded
+through the WP theme export. Needs Docker with the compose plugin.
+
+```bash
+npm run wordpress:docker -- up                      # WordPress at http://localhost:8080 (admin / password)
+npm run wordpress:docker -- load outputs/library    # build the theme, install, activate, import every page
+npm run wordpress:docker -- wp theme list           # run any WP-CLI command
+npm run wordpress:docker -- down                    # stop, keep the data (reset also deletes it)
+```
+
+Settings (port, passwords) go in `docker/.env`; copy `docker/.env.example`. Loading a new site replaces the previous one.
+This path has not been run end to end yet: check that the live URLs match `private/answer-key.json`.
+
 ### WordPress or Drupal theme export
 
 The **WP** and **Drupal** buttons download a package that makes WordPress or Drupal serve the generated pages exactly
