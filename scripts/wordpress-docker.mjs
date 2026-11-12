@@ -46,7 +46,8 @@ function docker(args, { capture = false, allowFailure = false } = {}) {
   if (result.status !== 0 && !allowFailure) fail(`docker compose ${args.join(' ')} failed${capture ? `:\n${result.stderr || result.stdout}` : ''}`);
   return result;
 }
-const wp = (args, options) => docker(['run', '--rm', '-T', 'wpcli', ...args], options);
+// The wordpress:cli image runs its arguments as a program, so `wp` is named explicitly.
+const wp = (args, options) => docker(['run', '--rm', '-T', 'wpcli', 'wp', ...args], options);
 
 async function waitForHttp(timeoutMs = 180000) {
   const end = Date.now() + timeoutMs;
@@ -94,7 +95,7 @@ const [command, ...rest] = process.argv.slice(2);
 if (command === 'up') await up();
 else if (command === 'load') await load(rest[0]);
 else if (command === 'status') { docker(['ps', '--all']); console.log(`Address: ${address}`); }
-else if (command === 'wp') { if (!rest.length) fail('wp needs WP-CLI arguments, e.g. wp theme list'); const child = spawn('docker', ['compose', '-f', compose, 'run', '--rm', 'wpcli', ...rest], { cwd: root, stdio: 'inherit', env }); child.once('exit', code => process.exit(code ?? 1)); }
+else if (command === 'wp') { if (!rest.length) fail('wp needs WP-CLI arguments, e.g. wp theme list'); const child = spawn('docker', ['compose', '-f', compose, 'run', '--rm', 'wpcli', 'wp', ...rest], { cwd: root, stdio: 'inherit', env }); child.once('exit', code => process.exit(code ?? 1)); }
 else if (command === 'down') docker(['down']);
 else if (command === 'reset') { docker(['down', '--volumes']); await rm(join(root, '.wordpress-docker'), { recursive: true, force: true }); console.log('Removed the WordPress and database volumes.'); }
 else fail('Usage: npm run wordpress:docker -- up | load <site folder> | status | wp <args> | down | reset');
