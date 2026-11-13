@@ -79,9 +79,12 @@ test('handoff rejects unsafe source entries and preserves partial runtime output
   await assert.rejects(publishSiteHandoff(id, siteId), /regular file/);
   await rm(join(source, 'private', 'answer-key.json'));
   await writeFile(join(source, 'private', 'answer-key.json'), '{"pages":[]}');
-  await writeFile(join(source, 'public', 'unsafe\\name.html'), '<h1>Unsafe</h1>');
-  await assert.rejects(publishSiteHandoff(id, siteId), /unsafe website file name/);
-  await rm(join(source, 'public', 'unsafe\\name.html'));
+  // A backslash is a path separator on Windows, so such a file name can only exist elsewhere.
+  if (process.platform !== 'win32') {
+    await writeFile(join(source, 'public', 'unsafe\\name.html'), '<h1>Unsafe</h1>');
+    await assert.rejects(publishSiteHandoff(id, siteId), /unsafe website file name/);
+    await rm(join(source, 'public', 'unsafe\\name.html'));
+  }
   await rm(join(source, 'private', 'metadata.json'));
   await assert.rejects(publishSiteHandoff(id, siteId), /ENOENT/);
   assert.equal((await readdir(join(jobDirectory(id), 'handoff'))).length, 0);

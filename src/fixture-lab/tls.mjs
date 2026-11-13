@@ -76,7 +76,8 @@ async function inspectCertificateDirectory(directory) {
   if (entries.every(entry => entry === null)) throw new Error('Preview TLS directory exists without a key and certificate; refusing to overwrite it');
   if (entries.some(entry => entry === null)) throw new Error('Preview TLS directory is incomplete; refusing to replace existing certificate state');
   if (entries.some(entry => !entry.isFile() || entry.isSymbolicLink())) throw new Error('Preview TLS key and certificate must be regular files');
-  if ((entries[0].mode & 0o777) !== 0o600) throw new Error('Preview TLS private key permissions must be 0600');
+  // Windows has no POSIX permission bits (every file reads as 0666), so the check only applies elsewhere.
+  if (process.platform !== 'win32' && (entries[0].mode & 0o777) !== 0o600) throw new Error('Preview TLS private key permissions must be 0600');
 
   const [key, cert] = await Promise.all([readFile(keyPath), readFile(certPath)]);
   try {

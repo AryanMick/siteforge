@@ -2,7 +2,7 @@ import { gzipSync } from 'node:zlib';
 import { PLATFORM_PROFILES, platformHeaders } from '../render/platforms.mjs';
 import { createServer as createHttpServer } from 'node:http';
 import { createServer as createHttpsServer } from 'node:https';
-import { readFile, stat, realpath } from 'node:fs/promises';
+import { readFile, readdir, stat, realpath } from 'node:fs/promises';
 import { resolve, join, sep, extname } from 'node:path';
 import { previewUrl, rebaseHtml } from './rebase-html.mjs';
 import { validateTransportPlan } from '../noise/transport.mjs';
@@ -12,6 +12,17 @@ const COMPRESSIBLE = new Set(['.html', '.css', '.js', '.xml', '.txt', '.json', '
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.png': 'image/png', '.wav': 'audio/wav', '.xml': 'application/xml', '.txt': 'text/plain; charset=utf-8', '.htm': 'text/html', '.rss': 'application/rss+xml; charset=utf-8', '.gz': 'application/gzip' };
 // Only URLs on the fixture's own source origin are rebased, so deliberate wrong-host entries stay wrong.
 function sameOrigin(value, sourceOrigin) { try { return !sourceOrigin || new URL(value).origin === sourceOrigin; } catch { return false; } }
+// Directory listings are cached: a preview serves a finished site whose files no longer change.
+const listings = new Map();
+async function exactCase(root, segments) {
+  let directory = root;
+  for (const segment of segments) {
+    if (!listings.has(directory)) listings.set(directory, readdir(directory).then(names => new Set(names), () => new Set()));
+    if (!(await listings.get(directory)).has(segment)) return false;
+    directory = join(directory, segment);
+  }
+  return true;
+}
 function rebaseSitemap(source, origin, sourceOrigin) { return source.replace(/<loc>([^<]+)<\/loc>/g, (match, value) => sameOrigin(value, sourceOrigin) ? `<loc>${previewUrl(value, origin)}</loc>` : match); }
 function rebaseRobots(source, origin, sourceOrigin) { return source.replace(/^(\s*Sitemap:\s*)(\S+)/gim, (match, label, value) => sameOrigin(value, sourceOrigin) ? `${label}${previewUrl(value, origin)}` : match); }
 
@@ -236,7 +247,11 @@ export async function createFixtureHandler(directory, { rebaseOrigin = false, or
       let file = resolve(root, `.${pathname}`);
       if (file !== root && !file.startsWith(root + sep)) { await notFound(req, res); return; }
       let info;
-      try { info = await stat(file); }
+      try {
+        info = await stat(file);
+        // macOS and Windows disks ignore letter case; a real Linux web host does not, and the answer key follows it.
+        if (!(await exactCase(root, segments))) throw Object.assign(new Error(`No file with this exact case: ${pathname}`), { code: 'ENOENT' });
+      }
       catch (error) {
         // Old IIS/Windows hosts answer case variants of a path with the same document.
         const lower = pathname.toLowerCase();
@@ -264,7 +279,7 @@ export async function createFixtureHandler(directory, { rebaseOrigin = false, or
       if (publicOrigin) {
         const source = body.toString('utf8'); const extension = extname(file);
         if (extension === '.html') body = Buffer.from(rebaseHtml(source, publicOrigin, sourceOrigin));
-        else if (extension === '.xml' && /(?:^|\/)sitemap(?:-|\.)/.test(file)) body = Buffer.from(rebaseSitemap(source, publicOrigin, sourceOrigin));
+        else if (extension === '.xml' && /(?:^|[\\/])sitemap(?:-|\.)/.test(file)) body = Buffer.from(rebaseSitemap(source, publicOrigin, sourceOrigin));
         else if (file.endsWith(`${sep}robots.txt`)) body = Buffer.from(rebaseRobots(source, publicOrigin, sourceOrigin));
       }
       const contentType = rule?.type === 'wrong-content-type' ? rule.contentType : (MIME[extname(file)] ?? 'application/octet-stream');

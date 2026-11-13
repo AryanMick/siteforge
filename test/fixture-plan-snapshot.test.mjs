@@ -37,7 +37,7 @@ test('saved plans survive choice and preset drift; audit rejects altered provena
 
     const preload = join(root, 'changed-choices.mjs');
     await writeFile(preload, `import { FRAMEWORKS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/fixture-lab/config.mjs')).href)};\nimport { PRESETS } from ${JSON.stringify(pathToFileURL(join(cwd, 'src/site/presets.mjs')).href)};\nFRAMEWORKS.unshift('html');\nPRESETS.library.types[0].weight = 7;\n`);
-    process.env.NODE_OPTIONS = `--import=${preload}`;
+    process.env.NODE_OPTIONS = `--import=${pathToFileURL(preload).href}`;
     const started = await createJob(request);
     let job;
     const deadline = Date.now() + 20000;

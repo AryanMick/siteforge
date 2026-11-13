@@ -179,7 +179,7 @@ test('CLI reports child startup failure without printing ready', { timeout: 2000
   });
 });
 
-test('foreground CLI forwards termination only to its owned server', { timeout: 20000 }, async t => {
+test('foreground CLI forwards termination only to its owned server', { timeout: 20000, skip: process.platform === 'win32' && 'Windows stops processes without signals' }, async t => {
   const { script } = await launcherFixture(t);
   const child = spawn(process.execPath, [script], { stdio: ['ignore', 'pipe', 'pipe'] });
   const done = new Promise((accept, reject) => { child.once('error', reject); child.once('exit', (code, signal) => accept({ code, signal })); });

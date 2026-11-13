@@ -6,7 +6,7 @@ const gate = process.env.SITEFORGE_TEST_RELEASE_GATE;
 if (gate) {
   const unlink = fs.unlink;
   fs.unlink = async function(path) {
-    if (String(path).endsWith('/active.lock/owner.json')) {
+    if (/[\/]active.lock[\/]owner.json$/.test(String(path))) {
       await fs.writeFile(join(gate, 'waiting'), 'ready');
       const deadline = Date.now() + 15000;
       while (true) {

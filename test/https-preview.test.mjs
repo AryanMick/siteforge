@@ -115,7 +115,7 @@ test('preview certificates are private, bounded, reusable, and reject incomplete
   const firstStat = await stat(first.keyPath);
   assert.equal(first.keyPath, join(tlsDirectory, 'key.pem'));
   assert.equal(first.certPath, join(tlsDirectory, 'cert.pem'));
-  assert.equal(firstStat.mode & 0o777, 0o600);
+  if (process.platform !== 'win32') assert.equal(firstStat.mode & 0o777, 0o600);
   const certificate = new X509Certificate(first.cert);
   assert(certificate.checkHost('localhost'));
   assert(certificate.checkIP('127.0.0.1'));
@@ -140,7 +140,7 @@ test('preview certificates are private, bounded, reusable, and reject incomplete
   await writeFile(join(exposed, 'key.pem'), first.key, { mode: 0o600 });
   await writeFile(join(exposed, 'cert.pem'), first.cert, { mode: 0o600 });
   await chmod(join(exposed, 'key.pem'), 0o644);
-  await assert.rejects(ensurePreviewCertificate(exposed), /0600/);
+  if (process.platform !== 'win32') await assert.rejects(ensurePreviewCertificate(exposed), /0600/);
 
   const invalid = join(root, 'private', 'invalid-tls');
   await mkdir(invalid, { mode: 0o700 });

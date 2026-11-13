@@ -67,16 +67,22 @@ try {
           const broken=images.filter(image=>/^\/assets\/missing-\d+\.png$/.test(image.src));
           assert.equal(broken.length,intentionallyBroken?1:0,'Image failure must match private truth');
           assert(broken.every(image=>image.width===0&&image.complete),'Broken image unexpectedly loaded');
-          assert.equal(images.length,record.image?1:0,'Rendered image presence must match private truth');
+          // Pages also carry decorative pictures (home illustrations, related cards); only the record's own image is in the key.
+          if(record.image)assert(images.some(image=>image.src===record.image.src),'Rendered record image must match private truth');
           assert(images.filter(image=>!broken.includes(image)).every(image=>image.width>0&&image.complete),'Undeclared bitmap asset failed');
           assert.equal((await page.request.get(server.url+'/assets/collection.png')).status(),200,'Original bitmap must remain available');
           await page.screenshot({path:join(out,`${framework}-${level}-${view}-${viewport.width}.png`),fullPage:true});
         }
       }
+      await page.setViewportSize({width:1440,height:1000});
       await page.goto(server.url,{waitUntil:'networkidle'});
       if(framework!=='html')await page.waitForFunction(()=>document.documentElement.dataset.ready==='true');
-      await page.locator(`a[href="${truth.site.navigation[0].href}"]`).first().click();
-      await page.waitForURL(`**${truth.site.navigation[0].href}`);
+      // High-noise pages can open with a planned interstitial (age check); it is a crawler trap, not part of this test.
+      await page.evaluate(()=>document.querySelectorAll('[role=dialog][aria-modal=true]').forEach(node=>node.remove()));
+      const navLink=page.locator(`nav a[href="${truth.site.navigation[0].href}"]:visible`).first();
+      const linkHtml=await navLink.evaluate(node=>node.outerHTML.slice(0,300));
+      await navLink.click();
+      await page.waitForURL(`**${truth.site.navigation[0].href}`,{timeout:15000}).catch(error=>{throw new Error(`${framework}/${level}: clicking ${linkHtml} did not open ${truth.site.navigation[0].href} (now ${page.url()})`,{cause:error});});
       assert.equal(new URL(page.url()).pathname,truth.site.navigation[0].href);
       assert.equal((await page.request.get(server.url+'/private/ground-truth.json')).status(),404);
       if(framework!=='html'){
