@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { access, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -17,7 +17,9 @@ import { recordsCsv } from '../src/crawl/pagepilot/export.mjs';
 async function completedRun(projectId, runId) {
   for (let attempt = 0; attempt < 300; attempt++) {
     const run = await getRun(projectId, runId);
-    if (run?.status !== 'running') return run;
+    // The worker writes the final status just before it releases the pipeline lock; wait for both.
+    const locked = await access(join(process.env.PAGEPILOT_DATA_DIR, 'active.json')).then(() => true, () => false);
+    if (run?.status !== 'running' && !locked) return run;
     await new Promise(resolve => setTimeout(resolve, 100));
   }
   throw new Error(`Timed out waiting for run ${runId}`);
