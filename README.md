@@ -130,6 +130,12 @@ npm run wordpress:docker -- wp theme list           # run any WP-CLI command
 npm run wordpress:docker -- down                    # stop, keep the data (reset also deletes it)
 ```
 
+One command that generates a site and loads it: `bash scripts/test-site.sh`. By default it uses
+`examples/wordpress-max-noise.yaml`: every noise type except `delayed-content` (it needs a React or Angular site),
+Elementor-style builder markup, source clutter and the mixed server profile. Pass another settings file to use it instead.
+The server profile (`transport`) is applied by SiteForge's own server, not by WordPress, so it is recorded in the
+answer key but not served from Docker. `baseUrl` in that file must match the WordPress address (port 8080 by default).
+
 Settings (port, passwords) go in `docker/.env`; copy `docker/.env.example`. Loading a new site replaces the previous one.
 This path has not been run end to end yet: check that the live URLs match `private/answer-key.json`.
 
