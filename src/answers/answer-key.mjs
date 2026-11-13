@@ -8,7 +8,7 @@ import { seedFor } from '../site/util.mjs';
 import { NON_SEMANTIC_TRAP_TYPES, isCrawlerTrap, trapDetails } from '../noise/crawler-traps.mjs';
 import { dateFormatVariant, fieldLabelVariant } from '../noise/noise.mjs';
 
-const nonSemantic = new Set(['missing-field', 'malformed-nesting', 'boilerplate', 'delayed-content', 'missing-metadata', 'hidden-boilerplate', 'duplicate-heading', 'broken-image', 'conflicting-metadata', 'missing-main', 'legacy-document', 'image-missing-alt', 'frame-missing-title', 'shortcode-residue', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements', ...NON_SEMANTIC_TRAP_TYPES]);
+const nonSemantic = new Set(['missing-field', 'malformed-nesting', 'boilerplate', 'delayed-content', 'missing-metadata', 'hidden-boilerplate', 'duplicate-heading', 'broken-image', 'conflicting-metadata', 'missing-main', 'legacy-document', 'image-missing-alt', 'frame-missing-title', 'shortcode-residue', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements', 'builder-modules', ...NON_SEMANTIC_TRAP_TYPES]);
 
 function check(condition, message) {
   if (!condition) throw new Error(`Invalid answer key: ${message}`);

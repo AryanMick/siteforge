@@ -1,10 +1,11 @@
 import { parse, parseFragment, serialize, serializeOuter } from 'parse5';
 import { chance, seedFor, label, walk } from '../site/util.mjs';
 import { planFieldLocations } from '../answers/field-locations.mjs';
+import { BUILDER_CONTAINER_CLASS, builderModulesMarkup, builderModulesProfile } from './builder-modules.mjs';
 import { NON_SEMANTIC_TRAP_TYPES, isCrawlerTrap, trapDetails, trapEligible, trapHeadMarkup, trapMainMarkup, trapMutateHead, trapPostProcess, trapRawMarkup } from './crawler-traps.mjs';
 
 const DATA_TYPES = new Set(['missing-field', 'label-variation', 'date-format', 'delayed-content']);
-const NON_SEMANTIC_TYPES = new Set(['missing-field', 'malformed-nesting', 'boilerplate', 'delayed-content', 'missing-metadata', 'hidden-boilerplate', 'duplicate-heading', 'broken-image', 'conflicting-metadata', 'missing-main', 'legacy-document', 'image-missing-alt', 'frame-missing-title', 'shortcode-residue', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements', ...NON_SEMANTIC_TRAP_TYPES]);
+const NON_SEMANTIC_TYPES = new Set(['missing-field', 'malformed-nesting', 'boilerplate', 'delayed-content', 'missing-metadata', 'hidden-boilerplate', 'duplicate-heading', 'broken-image', 'conflicting-metadata', 'missing-main', 'legacy-document', 'image-missing-alt', 'frame-missing-title', 'shortcode-residue', 'hidden-reader-copy', 'analytics-beacon', 'spacer-elements', 'builder-modules', ...NON_SEMANTIC_TRAP_TYPES]);
 const scalarFields = page => Object.keys(page.fields).filter(key => key !== 'title' && key !== page.image?.field);
 const hasAdditionalFields = page => scalarFields(page).length > 0;
 const hasRenderedFieldList = (page, site) => (page.kind !== 'listing' || !site.shell)
@@ -487,6 +488,15 @@ export function applyHtmlNoise(html, page, site) {
     if (event.type === 'spacer-elements') {
       // Layout spacers from old editors: empty paragraphs, &nbsp; lines, stacked <br> and clearing divs.
       append(main, `<p>&nbsp;</p><p></p>${event.severity >= 2 ? '<br><br><div class="clear" style="clear:both"></div>' : ''}${event.severity >= 3 ? '<table class="spacer" width="100%" height="10"><tbody><tr><td>&nbsp;</td></tr></tbody></table>' : ''}`);
+    }
+    if (event.type === 'builder-modules') {
+      // Photo, button, audio player and content slider modules in the builder's own markup. On Beaver Builder and
+      // Elementor sites they join the page's module column; anywhere else they are appended to <main> as plain blocks.
+      let profile = builderModulesProfile(site);
+      const containerClass = BUILDER_CONTAINER_CLASS[profile];
+      const container = containerClass ? walk(main, node => hasClass(node, containerClass))[0] : undefined;
+      if (containerClass && !container) profile = 'generic';
+      append(container ?? main, builderModulesMarkup({ profile, severity: event.severity, seed: site.seed, pageId: page.pageId }));
     }
     if (event.type === 'legacy-color-attribute') {
       const body = walk(doc, node => node.tagName === 'body')[0];
