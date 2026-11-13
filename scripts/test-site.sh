@@ -16,3 +16,5 @@ npm run wordpress:docker -- load "$SITE"
 
 echo "Done: http://localhost:8080  (admin login is in docker/.env)"
 echo "Answer key: $SITE/private/answer-key.json"
+
+#To stop, use 'npm run wordpress:docker -- down'
