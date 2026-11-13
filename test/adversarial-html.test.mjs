@@ -205,7 +205,8 @@ function assertPairEffect(type, html, canonical) {
   if (type === 'microdata-attributes') assert(walk(doc, node => attr(node, 'itemscope') !== undefined).length >= 1 || classNodes(doc, 'field-list').length === 0);
   if (type === 'hidden-reader-copy') assert(classNodes(doc, 'sr-only').length >= 1);
   if (type === 'analytics-beacon') assert(classNodes(doc, 'tracking-pixel').length >= 1);
-  if (type === 'spacer-elements') assert.match(html, /<p>&nbsp;<\/p><p><\/p>/i);
+  // class-churn may run after the spacers and add classes to them.
+  if (type === 'spacer-elements') assert.match(html, /<p\b[^>]*>&nbsp;<\/p><p\b[^>]*><\/p>/i);
   if (type === 'builder-modules') assert(classNodes(doc, 'content-module').length >= 1);
 }
 
