@@ -22,6 +22,7 @@ export const OBSTACLE_CATALOG = [
   { id: 'comment-clutter', label: 'Comment clutter', group: 'Extraction' },
   { id: 'hidden-boilerplate', label: 'Hidden decoy content', group: 'Extraction' },
   { id: 'shortcode-residue', label: 'Leftover page-builder shortcodes', group: 'Extraction' },
+  { id: 'builder-modules', label: 'Page-builder modules (photo, button, audio, slider)', group: 'Extraction' },
   { id: 'hidden-reader-copy', label: 'Screen-reader-only text', group: 'Extraction' },
   { id: 'duplicate-heading', label: 'Competing headings', group: 'Extraction' },
   { id: 'conflicting-metadata', label: 'Conflicting metadata', group: 'Extraction' },
