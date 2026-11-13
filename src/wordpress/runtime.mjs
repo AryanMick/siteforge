@@ -1,3 +1,4 @@
+import { replaceFile } from '../site/replace-file.mjs';
 // The local WordPress that SiteForge puts generated sites into. It runs on WordPress Playground (PHP compiled to
 // WebAssembly, run by Node), so it needs no PHP, MySQL or Docker. WordPress files and its SQLite database live in
 // .wordpress/site and survive restarts. scripts/start-wordpress.mjs runs the server; the app starts it in the
@@ -52,7 +53,7 @@ const urlsFor = port => {
 
 export async function atomicJson(path, value) {
   const temporary = `${path}.${randomUUID()}.tmp`;
-  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await rename(temporary, path); }
+  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await replaceFile(temporary, path); }
   finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
 }
 

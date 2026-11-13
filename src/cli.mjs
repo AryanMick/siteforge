@@ -60,7 +60,7 @@ async function wordpressCommand([action, target], v) {
   const { inspectWordPress } = await import('./wordpress/inspect.mjs');
   const { connect } = await import('./wordpress/client.mjs');
   const { rename } = await import('node:fs/promises');
-  const atomicJson = async (path, value) => { const temporary = `${path}.${process.pid}.tmp`; await writeFile(temporary, json(value), { mode: 0o600 }); await rename(temporary, path); };
+  const atomicJson = async (path, value) => { const temporary = `${path}.${process.pid}.tmp`; await writeFile(temporary, json(value), { mode: 0o600 }); await (await import('./site/replace-file.mjs')).replaceFile(temporary, path); };
   const connection = { url: v.url, token: v.token };
   if (action === 'inspect') {
     const { client } = await connect(connection);

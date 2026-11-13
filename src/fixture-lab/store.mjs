@@ -1,3 +1,4 @@
+import { replaceFile } from '../site/replace-file.mjs';
 import { lstat, mkdir, readFile, readdir, rename, rm, rmdir, stat, unlink, writeFile } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
@@ -24,7 +25,7 @@ export function validUuid(id) { if (typeof id !== 'string' || !/^[0-9a-f]{8}-[0-
 export function validSiteId(id) { if (typeof id !== 'string' || !/^[a-z][a-z0-9-]{0,63}$/.test(id)) throw new Error('Invalid site ID'); return id; }
 export async function atomicJson(path, value) {
   const temporary = `${path}.${randomUUID()}.tmp`;
-  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await rename(temporary, path); }
+  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await replaceFile(temporary, path); }
   finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
 }
 async function readJson(path) { try { return JSON.parse(await readFile(path, 'utf8')); } catch (error) { if (error.code === 'ENOENT') return null; throw new Error('Stored fixture data could not be read. Existing files were preserved.', { cause: error }); } }

@@ -33,11 +33,13 @@ type NumberFieldProps = Omit<InputHTMLAttributes<HTMLInputElement>, 'value' | 'o
 function NumberField({ value, onValue, onBlur, onFocus, ...props }: NumberFieldProps) {
   const [text, setText] = useState(Number.isFinite(value) ? String(value) : '');
   const before = useRef(Number.isFinite(value) ? value : 0);
-  useEffect(() => {
-    // Settings changed elsewhere (Randomize, Repeat, the random-pages box) show up in the field.
+  // Settings changed elsewhere (Randomize, Repeat, the random-pages box) show up in the field in the same render,
+  // so nothing can read the old number in between.
+  const [shown, setShown] = useState(value);
+  if (!Object.is(shown, value)) {
+    setShown(value);
     if (Number.isFinite(value) && Number(text) !== value) setText(String(value));
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [value]);
+  }
   return <input {...props} type="text" inputMode="numeric" pattern="[0-9]*" autoComplete="off" value={text}
     onFocus={event => { if (Number.isFinite(value)) before.current = value; onFocus?.(event); }}
     onChange={event => {

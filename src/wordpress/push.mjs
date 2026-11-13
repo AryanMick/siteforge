@@ -1,3 +1,4 @@
+import { replaceFile } from '../site/replace-file.mjs';
 // Pushes a generated SiteForge site into a real WordPress through the SiteForge Importer plugin: native custom post
 // types with their fields, media library images, topic terms, relationships and an optional Home page. The active
 // theme and plugins (including Elementor) decide how it looks. Afterwards the plugin's answer key, with the real
@@ -5,7 +6,7 @@
 //
 // Big sites are streamed: canonical.json is read record by record and sent in batches, never as one request.
 import { createReadStream } from 'node:fs';
-import { open, readFile, rename, stat, unlink } from 'node:fs/promises';
+import { open, readFile, stat, unlink } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { PRESETS } from '../site/presets.mjs';
 import { slug } from '../site/util.mjs';
@@ -231,7 +232,7 @@ export async function saveAnswerKey(client, siteId, file, { pageSize = 500, onPr
     }
     await handle.write('\n  ]\n}\n');
     await handle.close();
-    await rename(temporary, file);
+    await replaceFile(temporary, file);
   } catch (error) {
     await handle.close().catch(() => {});
     await unlink(temporary).catch(() => {});
