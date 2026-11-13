@@ -48,7 +48,7 @@ test('Beaver Builder is WordPress-only and resolves in random site plans', () =>
   const choices = new Set(Array.from({ length: 128 }, (_, seed) => sitePlan({
     name: 'Random builder', cmsProfile: 'wordpress', builderProfile: 'random', seed,
   }, 0).summary.builderProfile));
-  assert.deepEqual([...choices].sort(), ['beaver-builder', 'divi', 'elementor', 'gutenberg', 'none', 'wpbakery']);
+  assert.deepEqual([...choices].sort(), ['avada', 'beaver-builder', 'bricks', 'divi', 'elementor', 'gutenberg', 'none', 'oxygen', 'siteorigin', 'wpbakery']);
 });
 
 test('Beaver Builder renders paired nodes through an HTML module', () => {
@@ -225,4 +225,30 @@ test('CMS profiles expose detectable generator, asset and body-class fingerprint
 test('no-CMS sites receive no CMS fingerprints', async () => {
   const model = createModel(validateConfig({ version: 1, seed: 9, site: { id: 'plain-source', pageCount: 8 }, noise: { level: 'clean' } }));
   for (const page of model.pages) assert.doesNotMatch(renderPage(model.site, page), /wp-content|wp-includes|name="generator"|name="Generator"|drupal|sites\/default\/files|wp-theme/i);
+});
+
+test('Oxygen, Bricks, Avada and SiteOrigin wrap the page content in their own markup and keep the answer key unchanged', () => {
+  const marks = {
+    oxygen: [/class="ct-section"/, /id="code_block-\d+-\d+" class="ct-code-block"/, /oxygen-body/, /\/wp-content\/uploads\/oxygen\/css\/universal\.css/],
+    bricks: [/id="brxe-[a-z]{6}" class="brxe-section"/, /class="brxe-text"/, /brx-body/, /\/wp-content\/themes\/bricks\/assets\/js\/bricks\.min\.js/],
+    avada: [/fusion-fullwidth fullwidth-box/, /class="fusion-text fusion-text-1"/, /fusion-body/, /\/wp-content\/uploads\/fusion-styles\/[0-9a-f]{8}\.min\.css/],
+    siteorigin: [/id="pl-\d+" class="panel-layout"/, /class="so-panel widget widget_custom_html/, /siteorigin-panels/, /siteorigin-panels\/css\/front-flex\.min\.css/],
+  };
+  const config = builderProfile => validateConfig({ version: 1, seed: 31,
+    site: { id: 'builder-source', pageCount: 7, cmsProfile: 'wordpress', builderProfile },
+    contentTypes: [{ name: 'book', label: 'Books', fields: [{ name: 'title', type: 'title' }, { name: 'author', type: 'person' }] }], noise: { level: 'clean' },
+  });
+  const plain = createModel(config('none'));
+  for (const [builder, patterns] of Object.entries(marks)) {
+    const model = createModel(config(builder));
+    const page = model.pages.find(item => item.kind === 'detail');
+    const html = renderPage(model.site, page);
+    for (const pattern of patterns) assert.match(html, pattern, builder);
+    const document = parse5.parse(html);
+    const content = findNode(document, node => attribute(node, 'id') === 'content') ?? findNode(document, node => node.tagName === 'main');
+    assert.match(nodeText(content), new RegExp(page.fields.author.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${builder}: author text still in the page`);
+    assert.equal(html, renderPage(model.site, page), `${builder}: same seed, same page`);
+    assert.deepEqual(model.pages.map(item => [item.url, item.fields]), plain.pages.map(item => [item.url, item.fields]), `${builder}: records unchanged`);
+    assert.throws(() => validateConfig({ version: 1, site: { id: 'invalid-cms', cmsProfile: 'drupal', builderProfile: builder } }), /require the WordPress/);
+  }
 });

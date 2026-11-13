@@ -84,6 +84,7 @@ export function FixtureLab() {
   const [wpBusy, setWpBusy] = useState(false);
   const [wpBuilder, setWpBuilder] = useState<'blocks' | 'elementor'>('blocks');
   const [wpPushes, setWpPushes] = useState<Record<string, WpPush>>({});
+  const [pushAll, setPushAll] = useState<{ done: number; total: number } | null>(null);
   const [siteQuery, setSiteQuery] = useState('');
   const [sitePage, setSitePage] = useState(0);
   const [freshSeed, setFreshSeed] = useState(true);
@@ -293,9 +294,8 @@ export function FixtureLab() {
       return status;
     } catch { return undefined; }
   }
-  async function pushToWordPress(site: Site) {
-    if (!selectedJob) return;
-    const jobId = selectedJob.id;
+  async function pushToWordPress(site: Site, jobId = selectedJob?.id) {
+    if (!jobId) return;
     const key = `${jobId}/${site.id}`;
     setWpPushes(previous => ({ ...previous, [key]: { state: 'queued' } }));
     try {
@@ -306,6 +306,18 @@ export function FixtureLab() {
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
     } catch (failure) { setWpPushes(previous => ({ ...previous, [key]: { state: 'failed', error: (failure as Error).message } })); }
+  }
+  // Push every site of the set, one after another, so the importer never works on two sites at once.
+  async function pushAllToWordPress() {
+    if (!selectedJob || pushAll) return;
+    const jobId = selectedJob.id;
+    const sites = selectedJob.sites;
+    setPushAll({ done: 0, total: sites.length });
+    for (const [index, site] of sites.entries()) {
+      await pushToWordPress(site, jobId);
+      setPushAll({ done: index + 1, total: sites.length });
+    }
+    setPushAll(null);
   }
   async function deleteJob() {
     if (!selectedId || deleting) return;
@@ -364,7 +376,7 @@ export function FixtureLab() {
               <div className={styles.advancedGrid}>
               <details className={styles.advanced}><summary>Look &amp; page source<ChevronDown size={15} /></summary><div className={styles.advancedBody}>
               <label className={styles.field}>Site appearance<select value={config.visualStyle} onChange={event => set('visualStyle', event.target.value)}>{['legacy', 'conventional', 'modern', 'mixed', 'random'].map(value => <option key={value} value={value}>{label(value)}</option>)}</select></label>
-              <label className={styles.field}>Page-builder markup<select value={config.builderProfile ?? 'none'} disabled={!['wordpress', 'random'].includes(config.cmsProfile ?? 'none')} onChange={event => set('builderProfile', event.target.value)}><option value="none">None</option><option value="gutenberg">Gutenberg style</option><option value="elementor">Elementor style</option><option value="beaver-builder">Beaver Builder style</option><option value="divi">Divi style</option><option value="wpbakery">WPBakery style</option><option value="random">Random</option></select></label>
+              <label className={styles.field}>Page-builder markup<select value={config.builderProfile ?? 'none'} disabled={!['wordpress', 'random'].includes(config.cmsProfile ?? 'none')} onChange={event => set('builderProfile', event.target.value)}><option value="none">None</option><option value="gutenberg">Gutenberg style</option><option value="elementor">Elementor style</option><option value="beaver-builder">Beaver Builder style</option><option value="divi">Divi style</option><option value="wpbakery">WPBakery style</option><option value="oxygen">Oxygen style</option><option value="bricks">Bricks style</option><option value="avada">Avada style</option><option value="siteorigin">SiteOrigin style</option><option value="random">Random</option></select></label>
               <label className={styles.field}>Page source<select value={config.sourceClutter ?? 'realistic'} onChange={event => set('sourceClutter', event.target.value)}><option value="realistic">Realistic (like live sites, 1,500–3,500 lines)</option><option value="none">Clean (short source)</option></select></label>
               <label className={styles.field}>Field layout<select value={config.fieldLayout} onChange={event => set('fieldLayout', event.target.value)}>{['definition-list', 'table', 'paragraphs', 'mixed', 'random'].map(value => <option key={value} value={value}>{label(value)}</option>)}</select></label>
               <label className={styles.field}>Optional field variation<select value={config.optionalFields === 'random' ? 'random' : config.optionalFields ? 'include' : 'exclude'} onChange={event => set('optionalFields', event.target.value === 'random' ? 'random' : event.target.value === 'include')}><option value="include">On</option><option value="exclude">Off</option><option value="random">Random</option></select></label>
@@ -419,7 +431,7 @@ export function FixtureLab() {
               <div><span>Answer keys</span><strong>{format(job.sites.length)}</strong></div>
             </div>
             {job.status === 'running' && <div className={styles.progress} role="status"><progress aria-label="Generation progress" max={job.totalPages} value={generatedPages + (job.progress?.siteIndex === job.completedSites ? job.progress.completedPages : 0)} /><span>{job.progress?.phase === 'verifying' ? 'Verifying files' : job.progress?.phase === 'preparing-handoff' ? 'Preparing test package' : job.progress?.phase === 'preparing' ? 'Preparing source records' : 'Generating pages'} / Website {Math.min((job.progress?.siteIndex ?? job.completedSites) + 1, job.config.siteCount)} of {job.config.siteCount}</span></div>}
-            {job.status === 'completed' && <WordPressPanel runtime={wordpress} busy={wpBusy} builder={wpBuilder} setBuilder={setWpBuilder} onToggle={action => void toggleWordPress(action)} onRefresh={() => void refreshWordPress()} />}
+            {job.status === 'completed' && <WordPressPanel runtime={wordpress} busy={wpBusy} builder={wpBuilder} setBuilder={setWpBuilder} onToggle={action => void toggleWordPress(action)} onRefresh={() => void refreshWordPress()} siteCount={job.sites.length} pushAll={pushAll} onPushAll={() => void pushAllToWordPress()} />}
             <div className={styles.tabs} role="group" aria-label="Test set views"><button type="button" aria-pressed={view === 'sites'} onClick={() => setView('sites')}><Globe2 size={16} />Websites</button><button type="button" aria-pressed={view === 'answers'} disabled={!job.sites.length} onClick={() => { setView('answers'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><FileCheck2 size={16} />Answer keys</button><button type="button" aria-pressed={view === 'coverage'} disabled={!job.sites.length} onClick={() => { setView('coverage'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><ListChecks size={16} />Coverage</button></div>
             {view === 'sites' ? <div className={styles.siteList}>
               {visibleSites.some(site => site.handoff?.status === 'ready') && <details className={styles.savedSettings}><summary>Local folders <ChevronDown size={15} /></summary><dl>{visibleSites.filter(site => site.handoff?.status === 'ready').map(site => <div key={site.id}><dt>{site.name}</dt><dd><code>{site.handoff!.directory}</code><button type="button" className={styles.iconButton} aria-label={`Copy folder for ${site.name}`} title="Copy folder path" onClick={() => void copy(site.handoff!.directory)}>{copied === site.handoff!.directory ? <Check size={14} /> : <Copy size={14} />}</button></dd></div>)}</dl></details>}
@@ -574,7 +586,7 @@ type WpPush = { state?: 'none' | 'queued' | 'running' | 'done' | 'failed'; progr
 type WpTypeInfo = { name?: string; label?: string; published?: number; registeredBy?: string; archiveUrl?: string };
 
 // The real WordPress on this computer (WordPress Playground: real WordPress and PHP running inside Node.js).
-function WordPressPanel({ runtime, busy, builder, setBuilder, onToggle, onRefresh }: { runtime: WpRuntime | null; busy: boolean; builder: 'blocks' | 'elementor'; setBuilder: (value: 'blocks' | 'elementor') => void; onToggle: (action: 'start' | 'stop') => void; onRefresh: () => void }) {
+function WordPressPanel({ runtime, busy, builder, setBuilder, onToggle, onRefresh, siteCount, pushAll, onPushAll }: { runtime: WpRuntime | null; busy: boolean; builder: 'blocks' | 'elementor'; setBuilder: (value: 'blocks' | 'elementor') => void; onToggle: (action: 'start' | 'stop') => void; onRefresh: () => void; siteCount: number; pushAll: { done: number; total: number } | null; onPushAll: () => void }) {
   const [types, setTypes] = useState<{ loading?: boolean; error?: string; list?: WpTypeInfo[] } | null>(null);
   const state = runtime?.state ?? 'stopped';
   async function loadTypes() {
@@ -591,6 +603,7 @@ function WordPressPanel({ runtime, busy, builder, setBuilder, onToggle, onRefres
         {state === 'running' && runtime?.url && <a className={styles.smallButton} href={runtime.url} target="_blank" rel="noreferrer"><ArrowUpRight size={15} />Open site</a>}
         {state === 'running' && runtime?.adminUrl && <a className={styles.smallButton} href={runtime.adminUrl} target="_blank" rel="noreferrer"><LayoutDashboard size={15} />Open /wp-admin</a>}
         <button className={styles.smallButton} type="button" disabled={busy || state === 'starting'} onClick={() => onToggle(state === 'running' ? 'stop' : 'start')}>{busy || state === 'starting' ? <LoaderCircle className={styles.spin} size={15} /> : <Power size={15} />}{state === 'running' ? 'Stop WordPress' : 'Start WordPress'}</button>
+        {state === 'running' && siteCount > 1 && <button className={styles.smallButton} type="button" disabled={!!pushAll} onClick={onPushAll}>{pushAll ? <LoaderCircle className={styles.spin} size={15} /> : <Upload size={15} />}{pushAll ? `Pushing ${pushAll.done + 1} of ${pushAll.total}…` : `Push all ${siteCount} sites`}</button>}
         <button className={styles.iconButton} type="button" aria-label="Refresh WordPress status" title="Refresh status" onClick={onRefresh}><RefreshCw size={15} /></button>
       </div>
     </div>

@@ -184,3 +184,12 @@ test('every plugin PHP file passes php -l', { skip: spawnSync('php', ['-v']).sta
   assert.match(main, /Requires PHP:\s+8\.0/);
   assert.match(main, /License:\s+GPL-2\.0-or-later/);
 });
+
+test('siteKey replaces the site id in WordPress so test sets that share site ids stay apart', async () => {
+  const wordpress = fakeWordPress({ perPage: 50 });
+  const summary = await pushSiteToWordPress(siteDir, { url: 'http://wp.test', token: 'secret', fetch: wordpress.fetch, siteKey: 'set-abc12345-wp-test' });
+  const imports = wordpress.calls.filter(call => call.route === '/import');
+  assert.ok(imports.length && imports.every(call => call.body.site.id === 'set-abc12345-wp-test'));
+  assert.equal(summary.siteId, 'set-abc12345-wp-test');
+  await assert.rejects(pushSiteToWordPress(siteDir, { url: 'http://wp.test', token: 'secret', fetch: wordpress.fetch, siteKey: '9-starts-with-a-digit' }), /siteKey must be/);
+});

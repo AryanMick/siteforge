@@ -37,7 +37,7 @@ Fill in **Create test set** and press **Generate test set**.
 | Technology | Plain HTML, React or Angular. React and Angular pages are built in the browser, like real apps. |
 | CMS markup | None, WordPress or Drupal. Adds the classes, scripts and headers those systems put on every page. |
 | Markup noise | How much broken or messy HTML to add, from clean to high. |
-| Look & page source | Old, conventional or modern design, page-builder markup (Gutenberg, Elementor and others) and how fields are laid out. |
+| Look & page source | Old, conventional or modern design, page-builder markup (Gutenberg, Elementor, Beaver Builder, Divi, WPBakery, Oxygen, Bricks, Avada or SiteOrigin) and how fields are laid out. |
 | Noise & scenarios | Which kinds of problems to add, such as misleading metadata, damaged HTML or crawler traps, and how hard to make them. |
 | Links & responses | How links are written (relative, root-relative, full URLs or mixed) and server problems such as errors and redirect loops. |
 | Repeatability | The seed. The same seed and settings always build the same sites. |
@@ -95,7 +95,8 @@ MySQL or Docker: WordPress Playground runs WordPress inside Node.js.
    Elementor plugin and takes about a minute. Later starts take 15 to 20 seconds.
 2. Choose how pages are built: **WordPress blocks** (the theme's own layout) or **Elementor** (the real Elementor page
    builder).
-3. Press **Push** next to a site.
+3. Press **Push** next to a site, or **Push all sites** to push the whole set one site after another. Sites from
+   different test sets never overwrite each other.
 4. Open **/wp-admin** (http://127.0.0.1:9400/wp-admin/, user `admin`, password `password`). The menu shows the site's
    content types, such as **Books**, **Authors** and **Events**, each with its fields as columns. Typing
    http://127.0.0.1:4400/wp-admin works too: it opens the WordPress dashboard, or a **Start WordPress** button if
@@ -161,6 +162,7 @@ npm run benchmark:baseline -- outputs/library                          # score S
 | `config/` | Settings for the behaviour and mutation tests. |
 | `docker/` | An optional Docker setup that serves a finished test set. |
 | `examples/` | Example settings files and the Smartcite output format. |
+| `.claude/skills/siteforge/` | Instructions that teach an AI assistant (such as Claude Code) to use SiteForge. |
 
 ## Tests
 
@@ -183,7 +185,7 @@ The browser checks in `scripts/checks/` need the app running. Set `PAGEPILOT_URL
 
 ## Known limits
 
-- Windows support has been checked by reading the code and on Linux, not yet on a Windows computer.
+- Windows is checked by GitHub Actions on a Windows machine (unit tests and starting the app), not by hand.
 - HTTPS previews need `openssl` installed.
 - No real Smartcite output has been scored yet.
 - WordPress archive pages follow WordPress's defaults (newest first). A theme that changes them is not reflected in the

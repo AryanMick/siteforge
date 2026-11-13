@@ -81,7 +81,7 @@ async function wordpressCommand([action, target], v) {
   await save();
   let last = 0;
   try {
-    const summary = await pushSiteToWordPress(target, { ...connection, builder: v.builder ?? 'blocks', setFrontPage: Boolean(v['front-page']), homePage: !v['no-home'], reuseExisting: !v['no-reuse'],
+    const summary = await pushSiteToWordPress(target, { ...connection, builder: v.builder ?? 'blocks', setFrontPage: Boolean(v['front-page']), homePage: !v['no-home'], reuseExisting: !v['no-reuse'], ...(v['site-key'] ? { siteKey: v['site-key'] } : {}),
       onProgress: async event => {
         status.progress = event;
         if (Date.now() - last > 500 || event.phase === 'done') { last = Date.now(); await save(); }
@@ -97,7 +97,7 @@ async function wordpressCommand([action, target], v) {
 }
 
 export async function main(argv = process.argv.slice(2)) {
-  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
+  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site','site-key'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
   const command = p[0];
   if (!command || v.help) { console.log(help); return; }
   if (command === 'wordpress') { await wordpressCommand(p.slice(1), v); return; }
