@@ -84,6 +84,9 @@ export function FixtureLab() {
   // site's push status. The content goes into WordPress as native posts; the active WordPress theme renders it.
   const [wordpress, setWordpress] = useState<WpRuntime | null>(null);
   const [wpBusy, setWpBusy] = useState(false);
+  const [drupal, setDrupal] = useState<WpRuntime | null>(null);
+  const [drupalBusy, setDrupalBusy] = useState(false);
+  const [drupalPushes, setDrupalPushes] = useState<Record<string, DrupalPush>>({});
   const [wpBuilder, setWpBuilder] = useState<'blocks' | 'elementor'>('blocks');
   const [wpPushes, setWpPushes] = useState<Record<string, WpPush>>({});
   const [pushAll, setPushAll] = useState<{ done: number; total: number } | null>(null);
@@ -114,7 +117,7 @@ export function FixtureLab() {
   const selectedSiteIds = selectedJob?.sites.slice(0, 25).map(site => site.id).join(',') ?? '';
   useEffect(() => {
     if (!selectedJob || !selectedSiteIds) return;
-    for (const siteId of selectedSiteIds.split(',')) void refreshPush(selectedJob.id, siteId);
+    for (const siteId of selectedSiteIds.split(',')) { void refreshPush(selectedJob.id, siteId); void refreshDrupalPush(selectedJob.id, siteId); }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedJob?.id, selectedSiteIds]);
   // Random sizes share the 100,000-page budget, so only fixed sizes can exceed it.
@@ -169,7 +172,12 @@ export function FixtureLab() {
     setConfig(previous => ({ ...previous, randomPageCount: true, pagesPerSite: 100000, domain: 'random', framework: 'random', visualStyle: 'random', noise: 'random', challenge: 'random', fieldLayout: 'random', linkMode: 'random', cmsProfile: 'random', builderProfile: 'random', optionalFields: 'random', scenario: 'random', transport: 'random', previewProtocol: 'http' }));
   }
 
-  useEffect(() => { void refreshWordPress(); }, []);
+  useEffect(() => { void refreshWordPress(); void refreshDrupal(); }, []);
+  useEffect(() => {
+    if (drupal?.state !== 'starting') return;
+    const timer = setTimeout(() => void refreshDrupal(), 2000);
+    return () => clearTimeout(timer);
+  }, [drupal]);
   useEffect(() => {
     if (wordpress?.state !== 'starting') return;
     const timer = setTimeout(() => void refreshWordPress(), 2000);
@@ -288,6 +296,40 @@ export function FixtureLab() {
     try { setWordpress(await request<WpRuntime>('/api/wordpress/runtime', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })); }
     catch (failure) { setWordpress(previous => ({ ...(previous ?? { state: 'failed' }), state: 'failed', error: (failure as Error).message })); }
     finally { setWpBusy(false); }
+  }
+  async function refreshDrupal() {
+    try { setDrupal(await request<WpRuntime>('/api/drupal/runtime')); }
+    catch (failure) { setDrupal({ state: 'failed', error: (failure as Error).message }); }
+  }
+  async function toggleDrupal(action: 'start' | 'stop') {
+    setDrupalBusy(true);
+    try { setDrupal(await request<WpRuntime>('/api/drupal/runtime', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action }) })); }
+    catch (failure) { setDrupal(previous => ({ ...(previous ?? { state: 'failed' }), state: 'failed', error: (failure as Error).message })); }
+    finally { setDrupalBusy(false); }
+  }
+  async function refreshDrupalPush(jobId: string, siteId: string) {
+    try {
+      const { status, current } = await request<{ status: DrupalPush; current: boolean }>(`${siteBase(jobId, siteId)}/drupal`);
+      const value = { ...status, current };
+      setDrupalPushes(previous => ({ ...previous, [`${jobId}/${siteId}`]: value }));
+      return value;
+    } catch { return undefined; }
+  }
+  // The local Drupal holds one site at a time; pushing a site replaces the one there.
+  async function pushToDrupal(site: Site) {
+    if (!selectedJob) return;
+    const jobId = selectedJob.id;
+    const key = `${jobId}/${site.id}`;
+    setDrupalPushes(previous => ({ ...previous, [key]: { state: 'queued' } }));
+    try {
+      await request(`${siteBase(jobId, site.id)}/drupal`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+      for (let attempt = 0; attempt < 3600; attempt++) {
+        const status = await refreshDrupalPush(jobId, site.id);
+        if (status && (status.state === 'done' || status.state === 'failed')) break;
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
+      for (const other of selectedJob.sites.slice(0, 25)) if (other.id !== site.id) void refreshDrupalPush(jobId, other.id);
+    } catch (failure) { setDrupalPushes(previous => ({ ...previous, [key]: { state: 'failed', error: (failure as Error).message } })); }
   }
   async function refreshPush(jobId: string, siteId: string) {
     try {
@@ -434,6 +476,7 @@ export function FixtureLab() {
             </div>
             {job.status === 'running' && <div className={styles.progress} role="status"><progress aria-label="Generation progress" max={job.totalPages} value={generatedPages + (job.progress?.siteIndex === job.completedSites ? job.progress.completedPages : 0)} /><span>{job.progress?.phase === 'verifying' ? 'Verifying files' : job.progress?.phase === 'preparing-handoff' ? 'Preparing test package' : job.progress?.phase === 'preparing' ? 'Preparing source records' : 'Generating pages'} / Website {Math.min((job.progress?.siteIndex ?? job.completedSites) + 1, job.config.siteCount)} of {job.config.siteCount}</span></div>}
             {job.status === 'completed' && <WordPressPanel runtime={wordpress} busy={wpBusy} builder={wpBuilder} setBuilder={setWpBuilder} onToggle={action => void toggleWordPress(action)} onRefresh={() => void refreshWordPress()} siteCount={job.sites.length} pushAll={pushAll} onPushAll={() => void pushAllToWordPress()} />}
+            {job.status === 'completed' && <DrupalPanel runtime={drupal} busy={drupalBusy} onToggle={action => void toggleDrupal(action)} onRefresh={() => void refreshDrupal()} />}
             <div className={styles.tabs} role="group" aria-label="Test set views"><button type="button" aria-pressed={view === 'sites'} onClick={() => setView('sites')}><Globe2 size={16} />Websites</button><button type="button" aria-pressed={view === 'answers'} disabled={!job.sites.length} onClick={() => { setView('answers'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><FileCheck2 size={16} />Answer keys</button><button type="button" aria-pressed={view === 'coverage'} disabled={!job.sites.length} onClick={() => { setView('coverage'); setAnswerSite(value => value || job.sites[0]?.id || ''); }}><ListChecks size={16} />Coverage</button></div>
             {view === 'sites' ? <div className={styles.siteList}>
               {visibleSites.some(site => site.handoff?.status === 'ready') && <details className={styles.savedSettings}><summary>Local folders <ChevronDown size={15} /></summary><dl>{visibleSites.filter(site => site.handoff?.status === 'ready').map(site => <div key={site.id}><dt>{site.name}</dt><dd><code>{site.handoff!.directory}</code><button type="button" className={styles.iconButton} aria-label={`Copy folder for ${site.name}`} title="Copy folder path" onClick={() => void copy(site.handoff!.directory)}>{copied === site.handoff!.directory ? <Check size={14} /> : <Copy size={14} />}</button></dd></div>)}</dl></details>}
@@ -458,11 +501,13 @@ export function FixtureLab() {
                     {site.pageCount <= 100000 && <><a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/download?kind=wordpress`} aria-label={`Download WordPress theme for ${site.name}`} title="WordPress theme ZIP: upload and activate it in a real WordPress, which then serves this site with its own WordPress markup"><Package size={17} /><span>WP</span></a>
                     <a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/download?kind=drupal`} aria-label={`Download Drupal theme for ${site.name}`} title="Drupal module and theme ZIP: unzip into a real Drupal web root and enable it; Drupal then serves this site with its own markup"><Package size={17} /><span>Drupal</span></a></>}
                     <button className={styles.iconButton} type="button" disabled={wordpress?.state !== 'running' || ['queued', 'running'].includes(wpPushes[`${job.id}/${site.id}`]?.state ?? '')} onClick={() => void pushToWordPress(site)} aria-label={`Push ${site.name} into WordPress`} title={wordpress?.state === 'running' ? `Put this site's content into the local WordPress as real WordPress content (${wpBuilder === 'elementor' ? 'pages built with Elementor' : 'WordPress blocks'})` : 'Start WordPress first (Real WordPress panel above)'}><Upload size={17} /><span>Push</span></button>
+                    <button className={styles.iconButton} type="button" disabled={drupal?.state !== 'running' || ['queued', 'running'].includes(drupalPushes[`${job.id}/${site.id}`]?.state ?? '')} onClick={() => void pushToDrupal(site)} aria-label={`Push ${site.name} into Drupal`} title={drupal?.state === 'running' ? 'Put this site into the local Drupal as Drupal content types and nodes (replaces the site there now)' : 'Start Drupal first (Real Drupal panel above)'}><Upload size={17} /><span>Drupal ↑</span></button>
                     <label className={styles.iconButton} title="Score a tool's output for this website (JSON in the format in examples/smartcite-output.schema.json)"><Gauge size={17} /><span>Score</span><input className={styles.visuallyHidden} type="file" accept="application/json,.json" aria-label={`Score a tool's output for ${site.name}`} onChange={event => { void scoreResult(site, event.target.files?.[0]); event.target.value = ''; }} /></label>
                     <button className={styles.iconButton} type="button" aria-label={`Inspect answers for ${site.name}`} title="Inspect private answer key" onClick={() => { setAnswerSite(site.id); setView('answers'); }}><FileCheck2 size={17} /></button>
                     {url?.startsWith('https:') && <a className={styles.iconButton} href={`${siteBase(job.id, site.id)}/certificate`} aria-label={`Download test certificate for ${site.name}`} title="Download public test certificate"><ShieldCheck size={17} /></a>}
                   </div>
                   {scores[`${job.id}/${site.id}`] && <ScoreSummary state={scores[`${job.id}/${site.id}`]} siteName={site.name} />}
+                  {drupalPushes[`${job.id}/${site.id}`] && drupalPushes[`${job.id}/${site.id}`].state !== 'none' && <DrupalPushSummary state={drupalPushes[`${job.id}/${site.id}`]} siteName={site.name} runtime={drupal} />}
                   {wpPushes[`${job.id}/${site.id}`] && wpPushes[`${job.id}/${site.id}`].state !== 'none' && <PushSummary state={wpPushes[`${job.id}/${site.id}`]} siteName={site.name} answersHref={`${siteBase(job.id, site.id)}/wordpress?kind=answers`} runtime={wordpress} />}
                 </article>;
               })}
@@ -584,6 +629,7 @@ function ScoreSummary({ state, siteName }: { state: { busy?: boolean; error?: st
 }
 
 type WpRuntime = { state: 'stopped' | 'starting' | 'running' | 'failed'; url?: string; adminUrl?: string; username?: string; password?: string; error?: string; logTail?: string };
+type DrupalPush = { state?: 'none' | 'queued' | 'running' | 'done' | 'failed'; current?: boolean; progress?: { phase?: string; total?: number } | null; summary?: { records?: number; url?: string; adminUrl?: string; theme?: string; types?: { name: string; label?: string; count?: number }[] } | null; error?: string | null };
 type WpPush = { state?: 'none' | 'queued' | 'running' | 'done' | 'failed'; progress?: { done?: number; total?: number; phase?: string } | null; summary?: { created?: number; updated?: number; unchanged?: number; records?: number; url?: string; adminUrl?: string; theme?: string | null; builder?: string; types?: { name: string; postType: string; reused?: boolean; label?: string; archiveUrl?: string }[] } | null; error?: string | null };
 type WpTypeInfo = { name?: string; label?: string; published?: number; registeredBy?: string; archiveUrl?: string };
 
@@ -619,6 +665,33 @@ function WordPressPanel({ runtime, busy, builder, setBuilder, onToggle, onRefres
       </details>}
     </div>
   </section>;
+}
+
+function DrupalPanel({ runtime, busy, onToggle, onRefresh }: { runtime: WpRuntime | null; busy: boolean; onToggle: (action: 'start' | 'stop') => void; onRefresh: () => void }) {
+  const state = runtime?.state ?? 'stopped';
+  return <section className={styles.wpPanel} aria-label="Real Drupal">
+    <div className={styles.wpHead}>
+      <div><strong>Real Drupal</strong><span className={styles.wpState} data-state={state}>{state === 'running' ? 'Running' : state === 'starting' ? 'Starting… (the first start downloads and installs Drupal and takes a minute)' : state === 'failed' ? 'Not running' : 'Stopped'}</span></div>
+      <div className={styles.wpActions}>
+        {state === 'running' && runtime?.url && <a className={styles.smallButton} href={runtime.url} target="_blank" rel="noreferrer"><ArrowUpRight size={15} />Open site</a>}
+        {state === 'running' && runtime?.url && <a className={styles.smallButton} href={`${runtime.url}/admin/content`} target="_blank" rel="noreferrer"><LayoutDashboard size={15} />Open /admin</a>}
+        <button className={styles.smallButton} type="button" disabled={busy || state === 'starting'} onClick={() => onToggle(state === 'running' ? 'stop' : 'start')}>{busy || state === 'starting' ? <LoaderCircle className={styles.spin} size={15} /> : <Power size={15} />}{state === 'running' ? 'Stop Drupal' : 'Start Drupal'}</button>
+        <button className={styles.iconButton} type="button" aria-label="Refresh Drupal status" title="Refresh status" onClick={onRefresh}><RefreshCw size={15} /></button>
+      </div>
+    </div>
+    <p className={styles.wpHelp}>Drupal ↑ puts a site into this Drupal: one Drupal content type per SiteForge type, one node per page, at the same addresses, so the site's own answer key scores a crawl of the Drupal site. Drupal holds one site at a time.{runtime?.username ? <> Log in as <code>{runtime.username}</code> / <code>{runtime.password}</code> (opening /admin logs you in).</> : null}</p>
+    {state === 'failed' && runtime?.error && <p className={styles.wpError} role="alert">{runtime.error}</p>}
+  </section>;
+}
+
+function DrupalPushSummary({ state, siteName, runtime }: { state: DrupalPush; siteName: string; runtime: WpRuntime | null }) {
+  if (state.state === 'queued' || state.state === 'running') return <div className={styles.scoreBox} role="status"><LoaderCircle className={styles.spin} size={15} />Pushing {siteName} into Drupal{state.progress?.phase ? ` (${state.progress.phase})` : '…'}</div>;
+  if (state.state === 'failed') return <div className={`${styles.scoreBox} ${styles.scoreError}`} role="alert"><CircleAlert size={15} />Drupal push failed: {state.error ?? 'unknown error'}</div>;
+  const summary = state.summary ?? {};
+  if (!state.current) return <div className={styles.scoreBox}>Was in Drupal; another site has replaced it since. Push again to bring it back.</div>;
+  const siteUrl = summary.url ?? runtime?.url;
+  return <div className={styles.scoreBox} aria-label={`Drupal push for ${siteName}`}><strong>In Drupal: {summary.records ?? 0} pages{summary.types?.length ? ` as ${summary.types.map(type => `${type.label ?? type.name} (${type.count ?? 0})`).join(', ')}` : ''}</strong>
+    {siteUrl && <a href={siteUrl} target="_blank" rel="noreferrer">Open the Drupal site</a>}{siteUrl && <a href={`${siteUrl.replace(/\/$/, '')}/admin/content`} target="_blank" rel="noreferrer">Open /admin</a>}<span>Score a crawl of it with this site's own answer key (JSON).</span></div>;
 }
 
 function PushSummary({ state, siteName, answersHref, runtime }: { state: WpPush; siteName: string; answersHref: string; runtime: WpRuntime | null }) {

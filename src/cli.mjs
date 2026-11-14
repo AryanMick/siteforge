@@ -25,6 +25,7 @@ node src/cli.mjs evaluate --truth outputs/library/private/ground-truth.json --ac
 node src/cli.mjs run examples/library.yaml --out outputs/run
 node src/cli.mjs batch examples/suite.yaml --out outputs/suite
 node src/cli.mjs wordpress push outputs/library [--url http://127.0.0.1:9400] [--token T] [--builder blocks|elementor] [--front-page]
+node src/cli.mjs drupal push outputs/library   (local Drupal from npm run drupal; replaces the site there)
 node src/cli.mjs wordpress inspect [--url ... --token ...] [--site outputs/library]
 node src/cli.mjs wordpress reset outputs/library [--url ... --token ...]
 
@@ -96,11 +97,35 @@ async function wordpressCommand([action, target], v) {
   }
 }
 
+// drupal push <site-dir> [--status FILE]: puts a site into the local Drupal (npm run drupal), replacing the one there.
+async function drupalCommand([action, target], v) {
+  if (action !== 'push' || !target) throw new Error('drupal commands: push <site-dir>');
+  const { pushSiteToDrupal } = await import('./drupal/push.mjs');
+  const { replaceFile } = await import('./site/replace-file.mjs');
+  const status = { state: 'running', pid: process.pid, siteDir: resolve(target), startedAt: new Date().toISOString(), progress: null, summary: null, error: null };
+  const save = async () => {
+    if (!v.status) return;
+    const temporary = `${v.status}.${process.pid}.tmp`;
+    await writeFile(temporary, json({ ...status, updatedAt: new Date().toISOString() }), { mode: 0o600 });
+    await replaceFile(temporary, v.status);
+  };
+  await save();
+  try {
+    const summary = await pushSiteToDrupal(target, { onProgress: async event => { status.progress = event; await save(); } });
+    Object.assign(status, { state: 'done', summary, finishedAt: new Date().toISOString() }); await save();
+    console.log(json(summary));
+  } catch (error) {
+    Object.assign(status, { state: 'failed', error: error.message, finishedAt: new Date().toISOString() }); await save();
+    throw error;
+  }
+}
+
 export async function main(argv = process.argv.slice(2)) {
   const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site','site-key'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
   const command = p[0];
   if (!command || v.help) { console.log(help); return; }
   if (command === 'wordpress') { await wordpressCommand(p.slice(1), v); return; }
+  if (command === 'drupal') { await drupalCommand(p.slice(1), v); return; }
   if (command === 'presets') {
     if (!v.out) throw new Error('presets requires --out');
     for (const [i,d] of DOMAINS.entries()) await writeNew(join(v.out,`${d}.yaml`),stringify(presetConfig(d,i)));

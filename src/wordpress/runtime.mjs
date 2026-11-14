@@ -176,7 +176,7 @@ async function launchWordPress({ root = process.cwd() } = {}) {
   return { ...await wordpressStatus({ root }), state: 'starting' };
 }
 
-function killTree(pid, signal) {
+export function killTree(pid, signal) {
   if (!Number.isInteger(pid) || pid <= 0) return Promise.resolve();
   if (process.platform === 'win32') {
     // Windows has no process groups or SIGTERM; taskkill /T ends the launcher and the Playground processes under it.

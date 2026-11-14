@@ -15,6 +15,7 @@
     "pagepilot": "node scripts/start-siteforge.mjs",
     "siteforge": "node scripts/start-siteforge.mjs",
     "wordpress": "node scripts/start-wordpress.mjs",
+    "drupal": "node scripts/start-drupal.mjs",
     "gateway": "node scripts/fixture-gateway.mjs",
     "audit:job": "node scripts/tools/audit-fixture-job.mjs",
     "test:generator-ui": "node scripts/checks/check-fixture-lab.mjs",

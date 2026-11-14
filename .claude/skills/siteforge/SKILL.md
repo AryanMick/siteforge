@@ -21,6 +21,7 @@ explains everything for people; this file is the short version for an AI assista
 ```bash
 npm start            # installs what's missing, starts the app at http://127.0.0.1:4400 and opens the browser
 npm run wordpress    # starts only the local WordPress at http://127.0.0.1:9400 (login admin / password)
+npm run drupal       # starts only the local Drupal at http://127.0.0.1:9600 (login admin / password)
 ```
 
 In the app: **Create test set** makes sites, **Saved test sets** lists them with Preview, ZIP, JSON (answer key),
@@ -36,6 +37,7 @@ node src/cli.mjs serve outputs/library --port 4310                           # p
 node src/cli.mjs evaluate --truth outputs/library/private/answer-key.json --actual output.json --out outputs/report
 node src/cli.mjs wordpress push outputs/library --builder elementor          # into the local WordPress
 node src/cli.mjs wordpress inspect                                           # what content types WordPress has
+node src/cli.mjs drupal push outputs/library                                 # into the local Drupal (one site at a time)
 ```
 
 Settings files are YAML; see `examples/` (`library.yaml`, `adversarial-library.yaml`, `noise-custom.yaml`). Useful
@@ -56,7 +58,8 @@ the WordPress site, score against the WordPress answer key that each push writes
 
 - `src/site/` plans a site, `src/render/` writes its HTML, `src/noise/` adds problems on purpose, `src/answers/` builds
   and scores answer keys.
-- `src/wordpress/` and `wordpress/siteforge-importer/` run the local WordPress and push sites into it.
+- `src/wordpress/` and `wordpress/siteforge-importer/` run the local WordPress and push sites into it; `src/drupal/`
+  does the same for Drupal (a crawl of the Drupal site is scored with the site's own answer key).
 - Saved test sets live in `.fixture-lab/jobs/<set>/sites/<site>/` (`public/` for the crawler, `private/` for answers).
 
 ## Adding a new kind of noise

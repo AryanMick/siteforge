@@ -9,6 +9,7 @@ outputs/
 .pagepilot/
 .fixture-lab/
 .wordpress/
+.drupal/
 .stryker-tmp/
 reports/
 *.tsbuildinfo

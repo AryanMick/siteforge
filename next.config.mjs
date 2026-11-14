@@ -7,7 +7,7 @@ const config = {
   agentRules: false,
   serverExternalPackages: ['@cucumber/gherkin', '@cucumber/messages'],
   outputFileTracingExcludes: {
-    '/*': ['./.fixture-lab/**/*', './.pagepilot/**/*', './.workbench/**/*', './outputs/**/*', './reports/**/*', './.cache/**/*', './.next-dev/**/*', './.wordpress/**/*'],
+    '/*': ['./.fixture-lab/**/*', './.pagepilot/**/*', './.workbench/**/*', './outputs/**/*', './reports/**/*', './.cache/**/*', './.next-dev/**/*', './.wordpress/**/*', './.drupal/**/*'],
   },
 };
 export default config;
