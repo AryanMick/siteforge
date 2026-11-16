@@ -346,11 +346,19 @@ class LocalLogin implements EventSubscriberInterface {
   }
 
   public function onRequest(RequestEvent $event): void {
-    if (!$event->isMainRequest() || !\\Drupal::currentUser()->isAnonymous()) {
+    if (!$event->isMainRequest()) {
       return;
     }
     $request = $event->getRequest();
+    // WordPress habits: /wp-admin and /wp-login.php lead to Drupal's admin and login.
+    if (preg_match('#^/(wp-admin|wp-login\\.php)(/|$)#', $request->getPathInfo(), $wordpress)) {
+      $event->setResponse(new RedirectResponse($wordpress[1] === 'wp-admin' ? '/admin' : '/user/login'));
+      return;
+    }
     if (!preg_match('#^/admin(/|$)#', $request->getPathInfo())) {
+      return;
+    }
+    if (!\\Drupal::currentUser()->isAnonymous()) {
       return;
     }
     $account = User::load(1);

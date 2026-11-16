@@ -26,7 +26,8 @@ npm run drupal       # starts only the local Drupal at http://127.0.0.1:9600 (lo
 
 In the app: **Create test set** makes sites, **Saved test sets** lists them with Preview, ZIP, JSON (answer key),
 WP/Drupal packages, Score and Push buttons. **Start WordPress**, then **Push** (one site) or **Push all sites**.
-Typing http://127.0.0.1:4400/wp-admin opens the WordPress dashboard, or offers to start WordPress.
+Typing http://127.0.0.1:4400/wp-admin or /admin opens the WordPress dashboard or the Drupal admin (/wordpress and
+/drupal open the sites), or offers to start that CMS. Drupal also sends /wp-admin to its own /admin.
 
 ## Command line
 

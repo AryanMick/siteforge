@@ -25,6 +25,18 @@ No Git? Press **Code → Download ZIP** on GitHub, unzip it, and double-click `O
 `Open SiteForge.bat` (Windows). The first time, macOS may say it can't check the file: open **System Settings →
 Privacy & Security** and press **Open Anyway**.
 
+## Addresses
+
+| Address | What it opens |
+| --- | --- |
+| http://127.0.0.1:4400 | SiteForge |
+| http://127.0.0.1:9400 and /wp-admin | The local WordPress and its dashboard |
+| http://127.0.0.1:9600 and /admin | The local Drupal and its admin |
+| http://127.0.0.1:4400/wp-admin, /admin, /wordpress, /drupal | Shortcuts from SiteForge to the same pages. If that CMS is off, you get a Start button. |
+
+Both CMSs log in as `admin` / `password`, and opening their admin logs you in. Typing /wp-admin or /wp-login.php on
+the Drupal site goes to Drupal's admin or login, and /admin on the WordPress site goes to /wp-admin.
+
 ## Make a test set
 
 Fill in **Create test set** and press **Generate test set**.
