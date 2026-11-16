@@ -262,6 +262,12 @@ echo json_encode(['installed' => is_file($siteforge_db) && filesize($siteforge_d
 if (!hash_equals((string) require __DIR__ . '/sites/default/siteforge-token.php', (string) ($_GET['token'] ?? ''))) { http_response_code(403); exit("Forbidden\\n"); }
 header('Content-Type: application/json');
 if (is_file(__DIR__ . '/sites/default/files/.siteforge-installed')) { echo json_encode(['installed' => TRUE, 'already' => TRUE]); return; }
+// An earlier start may have finished installing and stopped before SiteForge marked it; never install twice.
+$siteforge_db = __DIR__ . '/sites/default/files/.ht.sqlite';
+if (is_file($siteforge_db) && filesize($siteforge_db) > 100000) {
+  $siteforge_pdo = new PDO('sqlite:' . $siteforge_db);
+  if ($siteforge_pdo->query("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'users_field_data'")->fetchColumn()) { echo json_encode(['installed' => TRUE, 'already' => TRUE]); return; }
+}
 set_time_limit(0);
 $class_loader = require __DIR__ . '/autoload.php';
 require_once __DIR__ . '/core/includes/install.core.inc';
