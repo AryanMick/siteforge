@@ -10,9 +10,9 @@
 import { execFile, spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { createWriteStream } from 'node:fs';
-import { copyFile, mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { chmod, copyFile, mkdir, readdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { atomicJson, isAlive, killTree, portIsFree, probe, readJsonFile } from '../wordpress/runtime.mjs';
+import { atomicJson, isAlive, killTree, portIsFree, probe, readJsonFile, reclaimPort } from '../wordpress/runtime.mjs';
 
 export const DRUPAL_USERNAME = 'admin';
 export const DRUPAL_PASSWORD = 'password';
@@ -105,6 +105,7 @@ async function launchDrupal({ root = process.cwd() } = {}) {
   const paths = drupalPaths(root);
   if (!await exists(paths.cli)) throw new Error('WordPress Playground (which also runs Drupal) is not installed. Run npm install, then try again.');
   const port = drupalPort();
+  if (!await portIsFree(port)) await reclaimPort(port, root);
   if (!await portIsFree(port)) throw new Error(`Port ${port} is already in use by another program. Close it or set SITEFORGE_DRUPAL_PORT to a free port.`);
   await mkdir(paths.data, { recursive: true, mode: 0o700 });
   const env = { ...process.env, SITEFORGE_DRUPAL_PORT: String(port) };
@@ -232,6 +233,8 @@ $databases['default']['default'] = [
 ];
 $settings['hash_salt'] = ${phpString(randomBytes(32).toString('hex'))};
 $settings['config_sync_directory'] = 'sites/default/files/config_sync';
+// SiteForge rewrites settings.php on every start; keep Drupal from making it read-only again.
+$settings['skip_permissions_hardening'] = TRUE;
 $settings['trusted_host_patterns'] = ['^127\\.0\\.0\\.1$', '^localhost$'];
 $settings['siteforge_token'] = require __DIR__ . '/siteforge-token.php';
 `;
@@ -450,6 +453,7 @@ export async function runDrupal({ root = process.cwd(), background = false } = {
   if (process.platform !== 'win32') process.once('SIGHUP', stop);
   try {
     if (!await exists(paths.cli)) throw new Error('WordPress Playground (which also runs Drupal) is not installed. Run npm install, then try again.');
+    if (!await portIsFree(port) && (await reclaimPort(port, root)).length) say(`Stopped a Drupal left running on port ${port} by an earlier session.`);
     if (!await portIsFree(port)) throw new Error(`Port ${port} is already in use by another program. Close it or set SITEFORGE_DRUPAL_PORT to a free port.`);
     const release = await drupalRelease(paths, say);
     const token = await drupalToken(root) ?? randomBytes(24).toString('hex');
@@ -480,7 +484,10 @@ export async function runDrupal({ root = process.cwd(), background = false } = {
         say('Running the Drupal installer ...');
         await call(`${urls.url}/siteforge-install.php?token=${token}`, 20 * 60 * 1000);
       }
-      // The installer rewrites the database settings; a plain journal is set again after it.
+      // The installer rewrites the database settings and makes settings.php and its folder read-only (root ignores
+      // that, a normal user does not); make them writable again, then set the plain journal after its block.
+      await chmod(join(paths.site, 'sites', 'default'), 0o755);
+      await chmod(settings, 0o644);
       const text = await readFile(settings, 'utf8');
       if (!text.trimEnd().endsWith(JOURNAL)) await writeFile(settings, `${text.trimEnd()}\n${JOURNAL}\n`);
       return call(`${urls.url}/siteforge-setup.php?token=${token}`, 10 * 60 * 1000);

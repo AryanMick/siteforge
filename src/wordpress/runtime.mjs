@@ -96,12 +96,52 @@ export async function restAnswers(url, timeoutMs = 4000) {
   return false;
 }
 
-export function portIsFree(port) {
-  return new Promise(resolve => {
-    const server = createServer();
-    server.once('error', () => resolve(false));
-    server.listen({ port, host: '127.0.0.1', exclusive: true }, () => server.close(() => resolve(true)));
-  });
+const listenOnce = options => new Promise(resolve => {
+  const server = createServer();
+  server.once('error', () => resolve(false));
+  server.listen({ ...options, exclusive: true }, () => server.close(() => resolve(true)));
+});
+// A port counts as free only if nothing listens on it on 127.0.0.1 or on all addresses: the Playground server binds
+// all addresses (::), which a 127.0.0.1-only test misses on macOS.
+export async function portIsFree(port) {
+  return await listenOnce({ port, host: '127.0.0.1' }) && await listenOnce({ port });
+}
+
+const execText = (command, args) => new Promise(resolve => execFile(command, args, { windowsHide: true, timeout: 15000 }, (error, stdout) => resolve(error ? '' : String(stdout))));
+
+/** Process ids listening on a TCP port, with their command lines (macOS, Linux, Windows). */
+async function listeners(port) {
+  let pids;
+  if (process.platform === 'win32') {
+    const out = await execText('powershell.exe', ['-NoProfile', '-Command', `Get-NetTCPConnection -LocalPort ${port} -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess`]);
+    pids = out.split(/\s+/).map(Number).filter(pid => Number.isInteger(pid) && pid > 0);
+  } else {
+    const out = await execText('lsof', ['-nP', `-iTCP:${port}`, '-sTCP:LISTEN', '-t']);
+    pids = out.split(/\s+/).map(Number).filter(pid => Number.isInteger(pid) && pid > 0);
+  }
+  const unique = [...new Set(pids)];
+  return Promise.all(unique.map(async pid => ({
+    pid,
+    command: process.platform === 'win32'
+      ? await execText('powershell.exe', ['-NoProfile', '-Command', `(Get-CimInstance Win32_Process -Filter "ProcessId=${pid}").CommandLine`])
+      : await execText('ps', ['-o', 'command=', '-p', String(pid)]),
+  })));
+}
+
+/**
+ * Frees a port held by a leftover SiteForge server from an earlier run (its parent was closed, so nothing tracks it
+ * any more). Only processes whose command line runs this project's WordPress Playground CLI are stopped; anything else
+ * on the port is left alone and reported by the caller. Returns the stopped process ids.
+ */
+export async function reclaimPort(port, root = process.cwd()) {
+  const cli = join(root, 'node_modules', '@wp-playground', 'cli');
+  const ours = (await listeners(port)).filter(({ command }) => command.includes(cli) && command.includes(`--port ${port}`));
+  for (const { pid } of ours) await killTree(pid, 'SIGTERM');
+  const deadline = Date.now() + 10000;
+  while (ours.some(({ pid }) => isAlive(pid)) && Date.now() < deadline) await pause(200);
+  for (const { pid } of ours.filter(({ pid }) => isAlive(pid))) await killTree(pid, 'SIGKILL');
+  if (ours.length) await pause(500);
+  return ours.map(({ pid }) => pid);
 }
 
 async function logTail(path, lines = 40) {
@@ -162,6 +202,7 @@ async function launchWordPress({ root = process.cwd() } = {}) {
   const paths = wordpressPaths(root);
   if (!await exists(paths.cli)) throw new Error('WordPress Playground is not installed. Run npm install, then try again.');
   const port = wordpressPort();
+  if (!await portIsFree(port)) await reclaimPort(port, root);
   if (!await portIsFree(port)) throw new Error(`Port ${port} is already in use by another program. Close it or set SITEFORGE_WP_PORT to a free port.`);
   await mkdir(paths.data, { recursive: true, mode: 0o700 });
   const env = { ...process.env, SITEFORGE_WP_PORT: String(port) };
@@ -373,6 +414,7 @@ export async function runWordPress({ root = process.cwd(), background = false } 
   if (process.platform !== 'win32') process.once('SIGHUP', stop);
   try {
     if (!await exists(paths.cli)) throw new Error('WordPress Playground is not installed. Run npm install, then try again.');
+    if (!await portIsFree(port) && (await reclaimPort(port, root)).length) say(`Stopped a WordPress left running on port ${port} by an earlier session.`);
     if (!await portIsFree(port)) throw new Error(`Port ${port} is already in use by another program. Close it or set SITEFORGE_WP_PORT to a free port.`);
     const importerPlugin = await ensureImporterPlugin(paths);
     const connection = await ensureConnection(paths, port, startedAt);
