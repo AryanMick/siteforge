@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export function assertNoRuntimeArtifacts(files, tracePath, root) {
   assert(Array.isArray(files) && files.every(file => typeof file === 'string'), 'Invalid production trace');
-  const runtimeDirectories = ['.fixture-lab', '.pagepilot', '.workbench', '.wordpress', 'outputs', 'reports', '.cache'];
+  const runtimeDirectories = ['.fixture-lab', '.pagepilot', '.workbench', '.wordpress', '.drupal', 'outputs', 'reports', '.cache'];
   for (const file of files) {
     const traced = relative(root, resolve(dirname(tracePath), file));
     assert(!runtimeDirectories.some(directory => traced === directory || traced.startsWith(directory + sep)), `Runtime data included in deployment trace: ${traced}`);

@@ -25,6 +25,18 @@ No Git? Press **Code → Download ZIP** on GitHub, unzip it, and double-click `O
 `Open SiteForge.bat` (Windows). The first time, macOS may say it can't check the file: open **System Settings →
 Privacy & Security** and press **Open Anyway**.
 
+## Addresses
+
+| Address | What it opens |
+| --- | --- |
+| http://127.0.0.1:4400 | SiteForge |
+| http://127.0.0.1:9400 and /wp-admin | The local WordPress and its dashboard |
+| http://127.0.0.1:9600 and /admin | The local Drupal and its admin |
+| http://127.0.0.1:4400/wp-admin, /admin, /wordpress, /drupal | Shortcuts from SiteForge to the same pages. If that CMS is off, you get a Start button. |
+
+Both CMSs log in as `admin` / `password`, and opening their admin logs you in. Typing /wp-admin or /wp-login.php on
+the Drupal site goes to Drupal's admin or login, and /admin on the WordPress site goes to /wp-admin.
+
 ## Make a test set
 
 Fill in **Create test set** and press **Generate test set**.
@@ -54,6 +66,7 @@ Open **Saved test sets**. Each site has these buttons:
 - **WP** and **Drupal** download a theme or module that installs the site into a real WordPress or Drupal.
 - **Score** takes Smartcite's output file and shows how much it got right.
 - **Push** puts the site's content into the real WordPress on your computer (see below).
+- **Drupal ↑** puts the site into the real Drupal on your computer (see below).
 
 **Download full test package** saves every site and its answer key, one folder per site.
 
@@ -139,6 +152,22 @@ answer key but not served from Docker. `baseUrl` in that file must match the Wor
 
 Settings (port, passwords) go in `docker/.env`; copy `docker/.env.example`. Loading a new site replaces the previous one.
 This path has not been run end to end yet: check that the live URLs match `private/answer-key.json`.
+## Put a site into a real Drupal
+
+SiteForge also runs a real Drupal 11 on your computer, the same way: no PHP, MySQL or Docker.
+
+1. In **Saved test sets**, open a set and press **Start Drupal**. The first start downloads and installs Drupal (about
+   a minute). Later starts take a few seconds.
+2. Press **Drupal ↑** next to a site.
+3. Open **/admin** (http://127.0.0.1:9600/admin/content, user `admin`, password `password`). Opening /admin logs you in.
+
+Each SiteForge content type becomes a Drupal content type (Book, Event, Author...) and each page a node at the same
+address as in the generated site, inside Drupal's own page markup. Because the addresses don't change, the site's own
+answer key scores a crawl of the Drupal site. Drupal holds one site at a time: pushing another site replaces it.
+
+Drupal keeps its files and database in `.drupal/` (about 200 MB). Delete `.drupal/site/` to start again. To run on
+PHP compiled to WebAssembly, SiteForge changes two things in that copy of Drupal: core's few uses of PHP Fibers run
+straight through, and SQLite uses a plain journal instead of WAL. Neither changes the pages Drupal serves.
 
 ### WordPress or Drupal theme export
 
@@ -159,6 +188,8 @@ node src/cli.mjs serve outputs/library --port 4310                     # preview
 node src/cli.mjs evaluate --truth ... --actual ... --out ...           # score a tool's output
 npm run wordpress                                                      # start the local WordPress
 node src/cli.mjs wordpress push outputs/library --builder elementor     # push a site into it
+npm run drupal                                                         # start the local Drupal
+node src/cli.mjs drupal push outputs/library                           # put a site into it
 npm run benchmark:baseline -- outputs/library                          # score SiteForge's own simple crawler
 ```
 
@@ -173,6 +204,7 @@ npm run benchmark:baseline -- outputs/library                          # score S
 | `src/answers/` | Builds the answer key and scores a tool's output against it. |
 | `src/cms/` | Packs a site as a WordPress theme or a Drupal module. |
 | `src/wordpress/` | Runs the local WordPress, reads what content types a WordPress site has, and pushes a site's content into it. |
+| `src/drupal/` | Runs the local Drupal and puts a site into it with the Drupal package from `src/cms/`. |
 | `wordpress/siteforge-importer/` | The WordPress plugin that creates the content types, posts, fields and images, and writes the WordPress answer key. |
 | `src/preview/` | The local server that shows a generated site. |
 | `src/crawl/` | SiteForge's own simple crawlers, used for the baseline benchmark and the app's health check. |

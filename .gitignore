@@ -11,6 +11,7 @@ outputs/
 .wordpress/
 .wordpress-docker/
 docker/.env
+.drupal/
 .stryker-tmp/
 reports/
 *.tsbuildinfo
