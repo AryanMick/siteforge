@@ -15,6 +15,10 @@ const profiles = [
   { cmsProfile: 'wordpress', builderProfile: 'beaver-builder' },
   { cmsProfile: 'wordpress', builderProfile: 'divi' },
   { cmsProfile: 'wordpress', builderProfile: 'wpbakery' },
+  { cmsProfile: 'wordpress', builderProfile: 'oxygen' },
+  { cmsProfile: 'wordpress', builderProfile: 'bricks' },
+  { cmsProfile: 'wordpress', builderProfile: 'avada' },
+  { cmsProfile: 'wordpress', builderProfile: 'siteorigin' },
   { cmsProfile: 'drupal', builderProfile: 'none' },
 ];
 const root = await mkdtemp(join(tmpdir(), 'siteforge-cms-browser-'));
@@ -122,7 +126,9 @@ try {
           }
         }
         if (profile.cmsProfile === 'drupal') {
-          assert.equal(await page.locator(`#content .node.node--type-${record.contentType} .node__content`).count(), 1);
+          // Listing pages are Drupal Views (src/render/drupal-views.mjs), not nodes.
+          if (record.kind === 'listing') assert.equal(await page.locator('#content .region-content').count(), 1, `${name}/${record.pageId}: Drupal region`);
+          else assert.equal(await page.locator(`#content .node.node--type-${record.contentType} .node__content`).count(), 1, `${name}/${record.pageId}: Drupal node`);
           assert.equal(await page.locator('#content [data-history-node-id], #content .field--name-body').count(), 0);
         }
         for (const [field, location] of Object.entries(record.fieldLocations)) {

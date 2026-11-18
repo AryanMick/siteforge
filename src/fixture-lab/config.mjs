@@ -41,7 +41,7 @@ const schema = z.object({
   fieldLayout: z.enum([...FIELD_LAYOUTS, 'random']).default('mixed'),
   linkMode: z.enum(['root-relative', 'relative', 'absolute', 'mixed', 'base-relative', 'random']).optional(),
   cmsProfile: z.enum(['none', 'wordpress', 'drupal', 'joomla', 'squarespace', 'webflow', 'hubspot', 'aem', 'sitecore', 'wix', 'shopify', 'ghost', 'random']).optional(),
-  builderProfile: z.enum(['none', 'gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery', 'random']).optional(),
+  builderProfile: z.enum(['none', 'gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery', 'oxygen', 'bricks', 'avada', 'siteorigin', 'random']).optional(),
   sourceClutter: z.enum(['none', 'realistic']).optional(),
   optionalFields: z.union([z.boolean(), z.literal('random')]).default(true),
   scenario: z.enum([...SCENARIOS, 'random']).default('baseline'),
@@ -74,7 +74,7 @@ const schema = z.object({
     if (value.pagesPerSite === 0) issue('pagesPerSite', 'Enter the maximum pages per site (5 to 100,000) for a random page count.');
   } else if (value.siteCount * (value.pagesPerSite || Math.min(200, Math.floor(100000 / value.siteCount))) > PAGE_BUDGET) context.addIssue({ code: z.ZodIssueCode.custom, path: ['siteCount'], message: 'Total generated pages cannot exceed 100,000.' });
   if (value.scenario === 'client-delay' && !['react', 'angular'].includes(value.framework)) context.addIssue({ code: z.ZodIssueCode.custom, path: ['framework'], message: 'Client delay requires the React or Angular framework.' });
-  if (['gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery'].includes(value.builderProfile) && value.cmsProfile !== 'wordpress') issue('builderProfile', 'Select WordPress for this page-builder markup.');
+  if (['gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery', 'oxygen', 'bricks', 'avada', 'siteorigin'].includes(value.builderProfile) && value.cmsProfile !== 'wordpress') issue('builderProfile', 'Select WordPress for this page-builder markup.');
 });
 
 export function validateFixtureInput(input) { return schema.parse(input); }
@@ -152,7 +152,7 @@ export function sitePlan(input, index) {
   // Random CMS markup is WordPress or Drupal only (2026-11-04, the user's request). The other platform profiles can
   // still be asked for by name through the API and the case catalog, but the app and Random never pick them.
   const cmsProfile = select(value.cmsProfile, ['wordpress', 'drupal'], value.seed, index, 10);
-  const builderProfile = cmsProfile === 'wordpress' ? select(value.builderProfile, ['none', 'gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery'], value.seed, index, 11) : 'none';
+  const builderProfile = cmsProfile === 'wordpress' ? select(value.builderProfile, ['none', 'gutenberg', 'elementor', 'beaver-builder', 'divi', 'wpbakery', 'oxygen', 'bricks', 'avada', 'siteorigin'], value.seed, index, 11) : 'none';
   // Crawler traps widen the URL space, so the random choice never selects them implicitly.
   const scenario = select(value.scenario, SCENARIOS.filter(item => !OPT_IN_SCENARIOS.includes(item)).filter(item => item !== 'client-delay' || framework !== 'html'), value.seed, index, 6);
   const transport = value.transport === 'mixed' ? 'mixed' : select(value.transport, Object.keys(TRANSPORT_LABELS).filter(item => !OPT_IN_TRANSPORT.includes(item)), value.seed, index, 7);

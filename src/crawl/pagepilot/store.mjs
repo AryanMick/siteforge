@@ -1,4 +1,5 @@
-import { mkdir, readFile, writeFile, rename, readdir, open, unlink } from 'node:fs/promises';
+import { replaceFile } from '../../site/replace-file.mjs';
+import { mkdir, readFile, writeFile, readdir, open, unlink } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { spawn } from 'node:child_process';
@@ -17,7 +18,7 @@ const lockPath = () => join(dataRoot(), 'active.json');
 const stopRequestPath = id => join(runDirectory(id), 'stop-request.json');
 export async function atomicJson(path, value) {
   const temporary = `${path}.${randomUUID()}.tmp`;
-  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await rename(temporary, path); }
+  try { await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 }); await replaceFile(temporary, path); }
   finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
 }
 async function readJson(path) {

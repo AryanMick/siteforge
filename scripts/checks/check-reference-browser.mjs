@@ -31,7 +31,8 @@ try {
       let verified = 0;
       for (const record of truth.pages) {
         await page.goto(server.url + record.url, { waitUntil: 'load' });
-        assert.equal((await page.locator('h1').innerText()).trim(), record.fields.title);
+        // textContent, not innerText: some site looks set text-transform: uppercase on headings.
+        assert.equal((await page.locator('h1').textContent()).replace(/\s+/g, ' ').trim(), record.fields.title);
         for (const [key, expected] of Object.entries(record.fields)) {
           if (key === 'title') continue;
           const wanted = record.fieldLabels?.[key] ?? label(key);

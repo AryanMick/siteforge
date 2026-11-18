@@ -1,6 +1,7 @@
+import { replaceFile } from '@/site/replace-file.mjs';
 import { spawn } from 'node:child_process';
 import { createReadStream } from 'node:fs';
-import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { Readable } from 'node:stream';
 import { z } from 'zod';
@@ -33,7 +34,7 @@ async function readStatus(file: string): Promise<PushStatus> {
 async function writeStatus(file: string, value: PushStatus) {
   const temporary = `${file}.${process.pid}.tmp`;
   await writeFile(temporary, JSON.stringify(value, null, 2) + '\n', { mode: 0o600 });
-  await rename(temporary, file);
+  await replaceFile(temporary, file);
 }
 
 // A push whose process is gone without finishing is reported as failed (a queued one gets a few seconds to start).
@@ -76,7 +77,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await mkdir(join(/* turbopackIgnore: true */ jobDirectory(id), 'wordpress'), { recursive: true, mode: 0o700 });
     const queued: PushStatus = { state: 'queued', jobId: id, siteId, builder: body.builder, frontPage: body.frontPage, queuedAt: new Date().toISOString(), progress: null, summary: null, error: null };
     await writeStatus(file, queued);
-    const args = [resolve(/* turbopackIgnore: true */ process.cwd(), 'src/cli.mjs'), 'wordpress', 'push', owned.directory, '--builder', body.builder, '--status', file, ...(body.frontPage ? ['--front-page'] : [])];
+    const args = [resolve(/* turbopackIgnore: true */ process.cwd(), 'src/cli.mjs'), 'wordpress', 'push', owned.directory, '--builder', body.builder, '--status', file, '--site-key', wordpressSiteKey(id, siteId), ...(body.frontPage ? ['--front-page'] : [])];
     const child = spawn(process.execPath, args, { cwd: process.cwd(), env: process.env, detached: true, windowsHide: true, stdio: 'ignore', shell: false });
     await new Promise((accept, reject) => { child.once('spawn', accept); child.once('error', reject); });
     child.unref();
@@ -84,4 +85,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await writeStatus(file, started);
     return json({ status: started }, 202);
   } catch (error) { return apiError(error); }
+}
+
+// Every test set has a site-001-..., so the WordPress key includes the set: pushing a second set never overwrites the
+// first one's posts, while pushing the same site again still updates its own posts.
+function wordpressSiteKey(jobId: string, siteId: string) {
+  return `set-${jobId.replace(/[^a-z0-9]/gi, '').slice(0, 8).toLowerCase()}-${siteId}`.slice(0, 64).replace(/-+$/, '');
 }

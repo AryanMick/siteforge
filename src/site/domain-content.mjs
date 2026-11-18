@@ -133,7 +133,13 @@ export function domainTitle(faker, domain, typeName, topic, index) {
     return typeName === 'provider' ? `${name}, ${pick(faker, ['MD', 'MD', 'DO', 'NP', 'PA-C'])}` : name;
   }
   const build = TITLES[domain]?.[typeName];
-  return build ? build(faker, topic, index) : null;
+  return build ? tidyTitle(build(faker, topic, index)) : null;
+}
+
+// A topic can end in the word its template adds ("arts funding" + " funding falls short"). Real headlines never
+// say a word twice in a row, and "planning plan" reads the same way.
+export function tidyTitle(title) {
+  return String(title).replace(/\b(\w+)(\s+\1)+\b/gi, '$1').replace(/\b(plann)ing plan\b/gi, '$1ing strategy');
 }
 
 // Field text banks. Each returns at least six sentences so the existing length variation still works.

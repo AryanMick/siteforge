@@ -229,6 +229,10 @@ function head(doc) {
 export function applyHtmlNoise(html, page, site) {
   const events = page.noiseEvents.filter(e => !DATA_TYPES.has(e.type));
   if (!events.length) return html;
+  // Entity encoding turns field text into raw markup that later operators cannot see, so text-run splitting goes first.
+  const split = events.findIndex(e => e.type === 'split-text-runs');
+  const encoded = events.findIndex(e => e.type === 'entity-encoded-text');
+  if (split > encoded && encoded >= 0) events.splice(encoded, 0, ...events.splice(split, 1));
   const doc = parse(html);
   const main = walk(doc, n => n.tagName === 'main')[0];
   if (!main) throw new Error('Renderer must provide a main element');

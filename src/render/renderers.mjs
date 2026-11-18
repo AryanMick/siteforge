@@ -341,10 +341,17 @@ function cmsFiles(site) {
     if (site.builderProfile === 'beaver-builder') styles.push(['fl-builder-layout-bundle-css', '/wp-content/uploads/bb-plugin/cache/layout-bundle.css', '2.9.4']);
     if (site.builderProfile === 'divi') styles.push(['divi-style-parent-css', '/wp-content/themes/Divi/style-static.min.css', '4.27.4'], ['et-builder-googlefonts-cached-css', '/wp-content/et-cache/global/et-divi-customizer-global.min.css', String(1700000000 + seedFor(site.seed, 'divi-css') % 90000000)]);
     if (site.builderProfile === 'wpbakery') styles.push(['js_composer_front-css', '/wp-content/plugins/js_composer/assets/css/js_composer.min.css', '7.9']);
+    if (site.builderProfile === 'oxygen') styles.push(['oxygen-css', '/wp-content/plugins/oxygen/component-framework/oxygen.css', '4.9.1'], ['oxygen-universal-css', '/wp-content/uploads/oxygen/css/universal.css', String(seedFor(site.seed, 'oxygen-cache') % 1000)]);
+    if (site.builderProfile === 'bricks') styles.push(['bricks-frontend-css', '/wp-content/themes/bricks/assets/css/frontend-layer.min.css', '1.12.4'], ['bricks-default-content-css', '/wp-content/themes/bricks/assets/css/frontend/content-default.min.css', '1.12.4']);
+    if (site.builderProfile === 'avada') styles.push(['fusion-dynamic-css-css', `/wp-content/uploads/fusion-styles/${seedFor(site.seed, 'avada-css').toString(16).padStart(8, '0')}.min.css`, '7.11.15']);
+    if (site.builderProfile === 'siteorigin') styles.push(['siteorigin-panels-front-css', '/wp-content/plugins/siteorigin-panels/css/front-flex.min.css', '2.31.5']);
     const scripts = [['jquery-core-js', '/wp-includes/js/jquery/jquery.min.js', JQUERY_VERSION], ['jquery-migrate-js', '/wp-includes/js/jquery/jquery-migrate.min.js', '3.4.1']];
     if (site.builderProfile === 'elementor') scripts.push(['elementor-frontend-js', '/wp-content/plugins/elementor/assets/js/frontend.min.js', '3.32.4']);
     if (site.builderProfile === 'divi') scripts.push(['divi-custom-script-js', '/wp-content/themes/Divi/js/scripts.min.js', '4.27.4']);
     if (site.builderProfile === 'wpbakery') scripts.push(['wpb_composer_front_js-js', '/wp-content/plugins/js_composer/assets/js/dist/js_composer_front.min.js', '7.9']);
+    if (site.builderProfile === 'bricks') scripts.push(['bricks-scripts-js', '/wp-content/themes/bricks/assets/js/bricks.min.js', '1.12.4']);
+    if (site.builderProfile === 'avada') scripts.push(['fusion-scripts-js', `/wp-content/uploads/fusion-scripts/${seedFor(site.seed, 'avada-js').toString(16).padStart(8, '0')}.min.js`, '7.11.15']);
+    if (site.builderProfile === 'siteorigin') scripts.push(['siteorigin-panels-front-styles-js', '/wp-content/plugins/siteorigin-panels/js/styling.min.js', '2.31.5']);
     return { styles, scripts };
   }
   if (site.cmsProfile === 'drupal') {
@@ -425,6 +432,10 @@ function cmsBodyClasses(site, page) {
       : site.builderProfile === 'beaver-builder' ? ' fl-builder fl-builder-2-9-4 fl-theme-builder-header fl-framework-base fl-preset-default fl-full-width'
         : site.builderProfile === 'divi' ? ` et_pb_button_helper_class et_fixed_nav et_show_nav et_primary_nav_dropdown_animation_fade et_secondary_nav_dropdown_animation_fade et_header_style_left et_pb_footer_columns4 et_cover_background et_pb_gutter et_pb_gutters3 et_pb_pagebuilder_layout et_right_sidebar et_divi_theme et-db`
           : site.builderProfile === 'wpbakery' ? ' wpb-js-composer js-comp-ver-7.9 vc_responsive'
+          : site.builderProfile === 'oxygen' ? ` oxygen-body`
+          : site.builderProfile === 'bricks' ? ' brx-body bricks-is-frontend wp-theme-bricks'
+          : site.builderProfile === 'avada' ? ' fusion-image-hovers fusion-pagination-sizing fusion-button_type-flat fusion-button_span-no fusion-button_gradient-linear avada-image-rollover-circle-yes avada-image-rollover-yes avada-image-rollover-direction-left fusion-body ltr fusion-sticky-header no-tablet-sticky-header no-mobile-sticky-header avada-has-rev-slider-styles fusion-disable-outline fusion-sub-menu-fade mobile-logo-pos-left layout-wide-mode avada-has-boxed-modal-shadow-none layout-scroll-offset-full avada-has-zero-margin-offset-top fusion-top-header menu-text-align-center mobile-menu-design-classic fusion-show-pagination-text fusion-header-layout-v1 avada-responsive avada-footer-fx-none avada-menu-highlight-style-bar fusion-search-form-clean fusion-main-menu-search-overlay fusion-avatar-circle avada-dropdown-styles avada-blog-layout-large avada-blog-archive-layout-large avada-header-shadow-no avada-menu-icon-position-left avada-has-megamenu-shadow avada-has-mobile-menu-search avada-has-main-nav-search-icon avada-has-breadcrumb-mobile-hidden avada-has-titlebar-hide avada-header-border-color-full-transparent avada-has-pagination-width_height avada-flyout-menu-direction-fade avada-ec-views-v1'
+          : site.builderProfile === 'siteorigin' ? ' siteorigin-panels siteorigin-panels-before-js'
         : site.builderProfile === 'gutenberg' ? ' wp-embed-responsive is-block-theme' : ' wp-embed-responsive';
     return ` ${view} wp-theme-${themeSlug(site)}${builder}`;
   }
@@ -441,7 +452,7 @@ function cmsBodyEnd(site, page) {
   if (site.cmsProfile === 'wordpress') {
     const theme = themeSlug(site);
     const rules = JSON.stringify({ prefetch: [{ source: 'document', where: { and: [{ href_matches: '/*' }, { not: { href_matches: ['/wp-*.php', '/wp-admin/*', '/wp-content/uploads/*', '/wp-content/*', '/wp-content/plugins/*', `/wp-content/themes/${theme}/*`, '/*\\?(.+)'] } }, { not: { selector_matches: 'a[rel~="nofollow"]' } }, { not: { selector_matches: '.no-prefetch, .no-prefetch a' } }] }, eagerness: 'conservative' }] });
-    const builder = scripts.filter(([id]) => /^(elementor|divi|wpb_)/.test(id)).map(([id, path, version]) => `\n<script src="${assetUrl(site, page, path, `ver=${version}`)}" id="${id}"></script>`).join('');
+    const builder = scripts.filter(([id]) => /^(elementor|divi|wpb_|bricks|fusion|siteorigin)/.test(id)).map(([id, path, version]) => `\n<script src="${assetUrl(site, page, path, `ver=${version}`)}" id="${id}"></script>`).join('');
     return `\n<script type="speculationrules">\n${rules.replaceAll('<', '\\u003c')}\n</script>${builder}\n`;
   }
   if (site.cmsProfile === 'drupal') {
@@ -701,6 +712,26 @@ function cmsMarkup(site, page, body) {
       // WPBakery: rows, column containers and wpb_wrapper divs around a text column element.
       const css = seedFor(site.seed, page.pageId, 'wpbakery-css');
       content = `<div class="wpb-content-wrapper"><div class="vc_row wpb_row vc_row-fluid vc_custom_${css}"><div class="wpb_column vc_column_container vc_col-sm-12"><div class="vc_column-inner"><div class="wpb_wrapper"><div class="wpb_text_column wpb_content_element"><div class="wpb_wrapper">${content}</div></div></div></div></div></div></div>`;
+    }
+    if (site.builderProfile === 'oxygen') {
+      // Oxygen: ct-section > inner wrap > div block > code block, ids of the form <element>-<node>-<post>.
+      const post = postId(site, page);
+      const node = kind => 10 + seedFor(site.seed, page.pageId, `oxygen-${kind}`) % 190;
+      content = `<div id="inner_content-5-7" class="ct-inner-content"><section id="section-${node('section')}-${post}" class="ct-section"><div class="ct-section-inner-wrap"><div id="div_block-${node('div')}-${post}" class="ct-div-block"><div id="code_block-${node('code')}-${post}" class="ct-code-block">${content}</div></div></div></section></div>`;
+    }
+    if (site.builderProfile === 'bricks') {
+      // Bricks: section > container > block > rich text, each with a brxe-<six letters> id.
+      const id = kind => seedFor(site.seed, page.pageId, `bricks-${kind}`).toString(36).replace(/[^a-z]/g, '').padEnd(6, 'x').slice(0, 6);
+      content = `<div id="brx-content"><section id="brxe-${id('section')}" class="brxe-section"><div id="brxe-${id('container')}" class="brxe-container"><div id="brxe-${id('block')}" class="brxe-block"><div id="brxe-${id('text')}" class="brxe-text">${content}</div></div></div></section></div>`;
+    }
+    if (site.builderProfile === 'avada') {
+      // Avada (Fusion Builder): full-width container > flex row > 1/1 column > column wrapper > text element.
+      content = `<div class="post-content"><div class="fusion-fullwidth fullwidth-box fusion-builder-row-1 fusion-flex-container nonhundred-percent-fullwidth non-hundred-percent-height-scrolling" style="--awb-border-radius-top-left:0px;--awb-flex-wrap:wrap;"><div class="fusion-builder-row fusion-row fusion-flex-align-items-flex-start" style="max-width:1248px;margin-left: calc(-4% / 2 );margin-right: calc(-4% / 2 );"><div class="fusion-layout-column fusion_builder_column fusion-builder-column-0 fusion_builder_column_1_1 1_1 fusion-flex-column" style="--awb-bg-size:cover;--awb-width-large:100%;"><div class="fusion-column-wrapper fusion-column-has-shadow fusion-flex-justify-content-flex-start fusion-content-layout-column"><div class="fusion-text fusion-text-1">${content}</div></div></div></div></div></div>`;
+    }
+    if (site.builderProfile === 'siteorigin') {
+      // SiteOrigin Page Builder: panel layout > grid > cell > widget, ids built from the post id.
+      const post = postId(site, page);
+      content = `<div id="pl-${post}" class="panel-layout"><div id="pg-${post}-0" class="panel-grid panel-no-style"><div id="pgc-${post}-0-0" class="panel-grid-cell"><div id="panel-${post}-0-0-0" class="so-panel widget widget_custom_html panel-first-child panel-last-child" data-index="0"><div class="textwidget custom-html-widget">${content}</div></div></div></div></div>`;
     }
     const type = escapeHtml(page.contentType);
     return `<article class="${type} type-${type} status-publish hentry"><div class="entry-content">${content}</div></article>`;

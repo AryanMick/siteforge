@@ -1,3 +1,4 @@
+import { replaceFile } from '../site/replace-file.mjs';
 // Pushes a generated SiteForge site into a real WordPress through the SiteForge Importer plugin: native custom post
 // types with their fields, media library images, topic terms, relationships and an optional Home page. The active
 // theme and plugins (including Elementor) decide how it looks. Afterwards the plugin's answer key, with the real
@@ -5,7 +6,7 @@
 //
 // Big sites are streamed: canonical.json is read record by record and sent in batches, never as one request.
 import { createReadStream } from 'node:fs';
-import { open, readFile, rename, stat, unlink } from 'node:fs/promises';
+import { open, readFile, stat, unlink } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { PRESETS } from '../site/presets.mjs';
 import { slug } from '../site/util.mjs';
@@ -231,7 +232,7 @@ export async function saveAnswerKey(client, siteId, file, { pageSize = 500, onPr
     }
     await handle.write('\n  ]\n}\n');
     await handle.close();
-    await rename(temporary, file);
+    await replaceFile(temporary, file);
   } catch (error) {
     await handle.close().catch(() => {});
     await unlink(temporary).catch(() => {});
@@ -247,7 +248,7 @@ export async function saveAnswerKey(client, siteId, file, { pageSize = 500, onPr
  *   reuseExisting?: boolean, batchSize?: number, onProgress?: (event: object) => unknown, client?: object, root?: string,
  *   fetch?: typeof fetch }} options
  */
-export async function pushSiteToWordPress(siteDir, { url, token, builder = 'blocks', setFrontPage = false, homePage = true, reuseExisting = true, batchSize = DEFAULT_BATCH_SIZE, onProgress = () => {}, client, root, fetch } = {}) {
+export async function pushSiteToWordPress(siteDir, { url, token, builder = 'blocks', setFrontPage = false, homePage = true, reuseExisting = true, siteKey, batchSize = DEFAULT_BATCH_SIZE, onProgress = () => {}, client, root, fetch } = {}) {
   if (!['blocks', 'elementor'].includes(builder)) throw new Error('builder must be blocks or elementor');
   let connection = { url };
   if (!client) ({ client, connection } = url && token ? { client: wordpressClient({ url, token, fetch }), connection: { url } } : await connect({ url, token, root, fetch }));
@@ -255,6 +256,11 @@ export async function pushSiteToWordPress(siteDir, { url, token, builder = 'bloc
   if (builder === 'elementor' && !status.elementor?.active) throw new Error('builder elementor needs the Elementor plugin to be active in WordPress.');
   await onProgress({ phase: 'scan', done: 0, total: 0 });
   const site = await loadSite(siteDir);
+  // siteKey keeps sites from different test sets apart when they share a site id (every set has a site-001-...).
+  if (siteKey !== undefined) {
+    if (!/^[a-z][a-z0-9-]{0,63}$/.test(siteKey)) throw new Error('siteKey must be lowercase letters, digits and dashes, starting with a letter (at most 64).');
+    site.id = siteKey;
+  }
   const types = typeSpec(site);
   const totals = { created: 0, updated: 0, unchanged: 0, failed: 0 };
   const warnings = [];

@@ -132,7 +132,7 @@ try {
   await pages.fill('100001');
   assert(await generate.isDisabled());
   await pages.fill('0');
-  assert(await generate.isDisabled(), 'The form requires 5-100,000 pages; random counts use the checkbox (the API still accepts 0)');
+  assert(await generate.isEnabled(), '0 pages per site means a random size (README: "0 picks a random size")');
   await siteCount.fill('500');
   await pages.fill('200');
   assert(await generate.isEnabled(), '500 x 200 remains within the 100,000-page aggregate limit');
@@ -216,11 +216,13 @@ try {
   assert(await seed.isEnabled());
   await seed.fill('0');
   assert(await generate.isEnabled());
+  // Number boxes take digits only, so a minus sign is dropped instead of making the form invalid.
   await seed.fill('-1');
-  assert(await generate.isDisabled());
+  assert.equal(await seed.inputValue(), '1');
+  assert(await generate.isEnabled());
   await fresh.check();
   assert(await seed.isDisabled());
-  assert.equal(await seed.inputValue(), '48291');
+  assert.equal(await seed.inputValue(), '1', 'a valid typed seed is kept');
   await pages.fill('200');
   await randomness.focus(); await randomness.press('Home');
   await page.getByRole('button', { name: 'Clean', exact: true }).click();
@@ -240,7 +242,13 @@ try {
   assert.equal(zipResponse.status(), 200);
   const zip = new AdmZip(await zipResponse.body());
   const entries = zip.getEntries();
-  assert.equal(entries.filter(item => item.entryName.endsWith('.html')).length, 200);
+  // Every answer-key page is in the ZIP; sites also carry pages the key does not score (search, sign-in, sorted views).
+  const htmlEntries = new Set(entries.filter(item => item.entryName.endsWith('.html')).map(item => item.entryName));
+  assert(htmlEntries.size >= 200, `${htmlEntries.size} HTML files`);
+  for (const record of largeTruth.pages) {
+    const file = `${record.url.replace(/^\//, '')}${record.url.endsWith('/') ? 'index.html' : ''}`;
+    assert([...htmlEntries].some(name => name === file || name.endsWith(`/${file}`)), `ZIP has ${record.url}`);
+  }
   for (const entry of entries) {
     assert.doesNotMatch(entry.entryName, /(?:^|\/)(?:private|answer-key\.json|ground-truth\.json)/);
     if (/\.(?:html|js|json|txt)$/.test(entry.entryName)) assert.doesNotMatch(entry.getData().toString(), /canonicalValues|fieldLocations|expectedCluster/);
