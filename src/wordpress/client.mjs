@@ -13,9 +13,12 @@ export class WordPressError extends Error {
   }
 }
 
-/** The local WordPress connection written by the WordPress runtime: { url, adminUrl, username, password, token }. */
-export async function readConnection(root = process.cwd()) {
-  const file = join(resolve(root), '.wordpress', 'connection.json');
+/**
+ * A WordPress connection file: { url, adminUrl, username, password, token }. By default the one the local (Playground)
+ * runtime writes, .wordpress/connection.json; the Docker WordPress writes .wordpress-docker/connection.json.
+ */
+export async function readConnection(root = process.cwd(), connectionFile) {
+  const file = connectionFile ? resolve(connectionFile) : join(resolve(root), '.wordpress', 'connection.json');
   let text;
   try { text = await readFile(file, 'utf8'); }
   catch (error) {
@@ -93,9 +96,9 @@ export function wordpressClient({ url, token, fetch: fetchImpl = globalThis.fetc
   };
 }
 
-/** A client for the given URL and token, or for .wordpress/connection.json when they are omitted. */
-export async function connect({ url, token, root, fetch } = {}) {
+/** A client for the given URL and token, or for the connection file (default .wordpress/connection.json) when they are omitted. */
+export async function connect({ url, token, root, connectionFile, fetch } = {}) {
   let connection = {};
-  if (!url || !token) connection = await readConnection(root);
+  if (!url || !token) connection = await readConnection(root, connectionFile);
   return { client: wordpressClient({ url: url ?? connection.url, token: token ?? connection.token, fetch }), connection: { ...connection, url: url ?? connection.url } };
 }

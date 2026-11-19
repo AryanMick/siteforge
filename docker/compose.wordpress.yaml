@@ -31,6 +31,8 @@ services:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
     volumes:
       - wp_data:/var/www/html
+      # The SiteForge Importer plugin from this repository, live (edits show up without rebuilding anything).
+      - ../wordpress/siteforge-importer:/var/www/html/wp-content/plugins/siteforge-importer:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://127.0.0.1/wp-login.php || curl -sS -o /dev/null -w '%{http_code}' http://127.0.0.1/ | grep -q '^[23]'"]
       interval: 5s
@@ -38,7 +40,7 @@ services:
       retries: 60
 
   # WP-CLI, run on demand by the script (docker compose run --rm wpcli ...). It shares WordPress's files and database.
-  # /import holds the theme package the script builds on the host.
+  # /import holds theme packages the script puts there (a SiteForge theme, or a theme zip you chose).
   wpcli:
     image: wordpress:cli-php8.3
     profiles: ["tools"]
@@ -53,6 +55,7 @@ services:
       WORDPRESS_DB_PASSWORD: ${MYSQL_PASSWORD:-wordpress}
     volumes:
       - wp_data:/var/www/html
+      - ../wordpress/siteforge-importer:/var/www/html/wp-content/plugins/siteforge-importer:ro
       - ../.wordpress-docker/import:/import:ro
     working_dir: /var/www/html
 
