@@ -248,10 +248,10 @@ export async function saveAnswerKey(client, siteId, file, { pageSize = 500, onPr
  *   reuseExisting?: boolean, batchSize?: number, onProgress?: (event: object) => unknown, client?: object, root?: string,
  *   fetch?: typeof fetch }} options
  */
-export async function pushSiteToWordPress(siteDir, { url, token, builder = 'blocks', setFrontPage = false, homePage = true, reuseExisting = true, siteKey, batchSize = DEFAULT_BATCH_SIZE, onProgress = () => {}, client, root, fetch } = {}) {
+export async function pushSiteToWordPress(siteDir, { url, token, builder = 'blocks', setFrontPage = false, homePage = true, reuseExisting = true, siteKey, batchSize = DEFAULT_BATCH_SIZE, onProgress = () => {}, client, root, connectionFile, fetch } = {}) {
   if (!['blocks', 'elementor'].includes(builder)) throw new Error('builder must be blocks or elementor');
   let connection = { url };
-  if (!client) ({ client, connection } = url && token ? { client: wordpressClient({ url, token, fetch }), connection: { url } } : await connect({ url, token, root, fetch }));
+  if (!client) ({ client, connection } = url && token ? { client: wordpressClient({ url, token, fetch }), connection: { url } } : await connect({ url, token, root, connectionFile, fetch }));
   const status = await client.status();
   if (builder === 'elementor' && !status.elementor?.active) throw new Error('builder elementor needs the Elementor plugin to be active in WordPress.');
   await onProgress({ phase: 'scan', done: 0, total: 0 });
@@ -317,10 +317,10 @@ export async function pushSiteToWordPress(siteDir, { url, token, builder = 'bloc
 }
 
 /** Deletes everything the import created for a site (in slices). */
-export async function resetSiteInWordPress(siteDirOrId, { url, token, client, root, fetch, onProgress = () => {} } = {}) {
+export async function resetSiteInWordPress(siteDirOrId, { url, token, client, root, connectionFile, fetch, onProgress = () => {} } = {}) {
   const siteId = /^[a-z][a-z0-9-]{0,63}$/.test(siteDirOrId) && !(await stat(siteDirOrId).catch(() => null))
     ? siteDirOrId : (await readJson(join(resolve(siteDirOrId), 'private', 'config.json'))).site.id;
-  if (!client) ({ client } = url && token ? { client: wordpressClient({ url, token, fetch }) } : await connect({ url, token, root, fetch }));
+  if (!client) ({ client } = url && token ? { client: wordpressClient({ url, token, fetch }) } : await connect({ url, token, root, connectionFile, fetch }));
   let deleted = 0;
   for (;;) {
     const result = await client.reset(siteId, { limit: 200 });

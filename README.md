@@ -132,6 +132,45 @@ The same works on any other WordPress: install the plugin in `wordpress/siteforg
 Elementor). The local WordPress keeps its files and database in `.wordpress/` (about 260 MB). Delete `.wordpress/site/`
 to start again with an empty WordPress.
 
+### WordPress in Docker (draft)
+
+An alternative to the Playground WordPress above: a real WordPress, PHP and MySQL in Docker. Needs Docker with the
+compose plugin. The SiteForge Importer plugin (`wordpress/siteforge-importer`) is mounted into the container and activated
+by `up`, which also writes its token to `.wordpress-docker/connection.json`.
+
+Pick a real theme, let SiteForge interrogate the site, then push the generated content into it. The theme keeps the
+design, and content types that already exist (from the theme or a plugin) are reused when they match:
+
+```bash
+npm run wordpress:docker -- up                                 # WordPress at http://localhost:8080 (login in docker/.env)
+npm run wordpress:docker -- theme astra                        # wordpress.org slug, a theme .zip file or a .zip URL
+npm run wordpress:docker -- wp plugin install <slug> --activate  # a plugin the theme needs for its content types
+npm run wordpress:docker -- inspect --site outputs/library     # content types, taxonomies, fields; where each type goes
+npm run wordpress:docker -- push outputs/library               # same options as wordpress push (--builder, --front-page)
+npm run wordpress:docker -- forget outputs/library             # delete what push created
+```
+
+Or let SiteForge build its own theme from the site (the WP theme export) and import every page through it:
+
+```bash
+npm run wordpress:docker -- load outputs/library    # build the theme, install, activate, import every page
+npm run wordpress:docker -- wp theme list           # run any WP-CLI command
+npm run wordpress:docker -- down                    # stop, keep the data (reset also deletes it)
+```
+
+One command that generates a site and loads it: `bash scripts/test-site.sh`. By default it uses
+`examples/wordpress-max-noise.yaml`: every noise type except `delayed-content` (it needs a React or Angular site),
+Elementor-style builder markup, source clutter and the mixed server profile. Pass another settings file to use it instead.
+The server profile (`transport`) is applied by SiteForge's own server, not by WordPress, so it is recorded in the
+answer key but not served from Docker. `baseUrl` in that file must match the WordPress address (port 8080 by default).
+
+The same for a real theme: `bash scripts/test-theme.sh` generates `examples/library.yaml`, starts from an empty
+WordPress, installs Astra, shows its content types and pushes the content in. `bash scripts/test-theme.sh kadence
+examples/adversarial-library.yaml` picks another theme and settings file. The theme renders the pages, so SiteForge's
+markup noise is not on this site; use `test-site.sh` for that.
+
+Settings (port, passwords) go in `docker/.env`; copy `docker/.env.example`. Loading a new site replaces the previous one.
+This path has not been run end to end yet: check that the live URLs match `private/answer-key.json`.
 ## Put a site into a real Drupal
 
 SiteForge also runs a real Drupal 11 on your computer, the same way: no PHP, MySQL or Docker.

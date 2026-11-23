@@ -1,0 +1,53 @@
+# Maximum-noise test site for the Docker WordPress (npm run wordpress:docker -- load <this site>).
+# Uses every noise type SiteForge has, the Elementor page-builder profile, source clutter and the mixed server profile.
+#
+# Left out on purpose:
+#   delayed-content  needs a React or Angular site, and the WordPress theme export needs static HTML pages.
+# challenge: hard  = probability 0.85, severity 3, up to 10 noise events per page. Every type shows up somewhere across the
+#                    site. Use challenge: extreme to put every type on every page (very heavy pages).
+# transport: mixed  is recorded in the answer key, but SiteForge's own server applies it, not WordPress (see README).
+# baseUrl must match the Docker WordPress address (SITEFORGE_WP_DOCKER_PORT, default 8080) so absolute links work.
+version: 1
+seed: 48291
+challenge: hard
+site:
+  id: wordpress-max-noise
+  name: Northstar Public Library
+  domain: library
+  framework: html
+  visualStyle: conventional
+  linkMode: mixed
+  cmsProfile: wordpress
+  builderProfile: elementor
+  sourceClutter: realistic
+  pageCount: 200
+  pageSize: 24
+  baseUrl: http://localhost:8080
+transport:
+  profile: mixed
+noise:
+  level: high
+  types: [
+    extra-wrapper, class-churn, inline-style, reorder-fields, boilerplate, missing-field, label-variation,
+    date-format, malformed-nesting, duplicate-id, missing-metadata, comment-clutter, hidden-boilerplate,
+    duplicate-heading, nested-layout-table, link-variants, broken-image, conflicting-metadata, obsolete-markup,
+    missing-main, legacy-document, image-missing-alt, onclick-navigation, javascript-only-link, deep-wrapper-tree,
+    frame-missing-title, legacy-color-attribute, shortcode-residue, split-text-runs, entity-encoded-text,
+    uppercase-legacy-tags, microdata-attributes, inline-svg-icons, hidden-reader-copy, analytics-beacon,
+    spacer-elements, builder-modules, select-navigation, postback-link, image-map-navigation, noscript-only-link,
+    comment-only-link, document-write-menu, dhtml-hover-menu, frameset-navigation, iframe-navigation,
+    window-open-popup, ie-conditional-links, object-embed-fallback, svg-links, form-get-navigation,
+    location-handlers, js-string-links, json-blob-links, data-attribute-links, js-redirect-page, meta-refresh-link,
+    meta-refresh-delayed, noscript-meta-refresh, shadow-dom-links, web-component-slots, lazy-load-noscript,
+    load-more-pagination, pushstate-infinite-scroll, session-id-urls, duplicate-url-aliases, tracking-params,
+    print-duplicates, mobile-duplicates, faceted-navigation, sort-order-params, default-document-aliases,
+    mixed-case-extensions, dot-segment-urls, relative-climb-links, backslash-urls, protocol-relative-links,
+    cross-scheme-links, base-href-traps, duplicate-section-content, near-duplicate-dated, pagination-query-variants,
+    long-url-links, calendar-trap, day-calendar-trap, path-info-trap, date-archive-trap, search-tag-cloud,
+    login-wall-links, misleading-canonical, canonical-chain, canonical-to-404, canonical-cross-host,
+    multiple-canonical, social-url-conflicts, hreflang-alternates, hreflang-cross-page, robots-noindex,
+    meta-robots-variants, rel-nofollow-links, rel-link-hints, feed-links, robots-txt-traps, sitemap-traps,
+    title-anomalies, structured-data-conflict, cookie-consent-wall, age-gate, charset-conflict,
+    windows-1252-documents, utf16-document, space-unicode-urls, entity-encoded-hrefs, whitespace-hrefs,
+    non-http-schemes, css-links, rtl-content-block
+  ]

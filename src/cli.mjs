@@ -30,7 +30,8 @@ node src/cli.mjs wordpress inspect [--url ... --token ...] [--site outputs/libra
 node src/cli.mjs wordpress reset outputs/library [--url ... --token ...]
 
 Overrides: --pages N --framework html|react|angular --noise clean|low|medium|high|custom
-WordPress: without --url/--token the connection in .wordpress/connection.json is used; --no-reuse always creates
+WordPress: without --url/--token the connection in .wordpress/connection.json is used (--connection FILE picks
+  another, e.g. .wordpress-docker/connection.json from npm run wordpress:docker); --no-reuse always creates
   new post types, --no-home skips the Home page, --status FILE writes progress JSON there.
 Crawl: --mode http|browser --strategy fields|structure --max-pages N --wait-ms N
 Evaluation: --options path/to/normalization.json; --min-coverage 0..1 exits 2 on regression
@@ -62,7 +63,7 @@ async function wordpressCommand([action, target], v) {
   const { connect } = await import('./wordpress/client.mjs');
   const { rename } = await import('node:fs/promises');
   const atomicJson = async (path, value) => { const temporary = `${path}.${process.pid}.tmp`; await writeFile(temporary, json(value), { mode: 0o600 }); await (await import('./site/replace-file.mjs')).replaceFile(temporary, path); };
-  const connection = { url: v.url, token: v.token };
+  const connection = { url: v.url, token: v.token, connectionFile: v.connection };
   if (action === 'inspect') {
     const { client } = await connect(connection);
     const siteTypes = v.site ? (await loadSite(v.site)).types : undefined;
@@ -121,7 +122,7 @@ async function drupalCommand([action, target], v) {
 }
 
 export async function main(argv = process.argv.slice(2)) {
-  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site','site-key'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
+  const { values:v, positionals:p } = parseArgs({ args:argv, allowPositionals:true, strict:true, options:Object.fromEntries(['out','port','host','pages','framework','noise','truth','actual','mode','strategy','max-pages','wait-ms','options','min-coverage','cms','url','token','builder','status','site','site-key','connection'].map(k=>[k,{type:'string'}]).concat(['help','front-page','no-home','no-reuse'].map(k=>[k,{type:'boolean'}]))) });
   const command = p[0];
   if (!command || v.help) { console.log(help); return; }
   if (command === 'wordpress') { await wordpressCommand(p.slice(1), v); return; }
