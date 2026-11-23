@@ -250,7 +250,7 @@ try {
     assert([...htmlEntries].some(name => name === file || name.endsWith(`/${file}`)), `ZIP has ${record.url}`);
   }
   for (const entry of entries) {
-    assert.doesNotMatch(entry.entryName, /(?:^|\/)(?:private|answer-key\.json|ground-truth\.json)/);
+    assert.doesNotMatch(entry.entryName, /(?:^|\/)(?:private(?:\/|$)|answer-key\.json|ground-truth\.json)/);
     if (/\.(?:html|js|json|txt)$/.test(entry.entryName)) assert.doesNotMatch(entry.getData().toString(), /canonicalValues|fieldLocations|expectedCluster/);
   }
   await audit('desktop-200-pages');

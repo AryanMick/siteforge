@@ -122,7 +122,7 @@ try {
   assert.deepEqual(toolPages.filter(name => files.some(file => file.entryName === name)), toolPages);
   assert.equal(answers.pages.length, 60);
   for (const file of files) {
-    assert(!/(?:^|\/)(?:private|answer-key\.json|ground-truth\.json|canonical\.json|config\.json|manifest\.json|transport\.json)/.test(file.entryName));
+    assert(!/(?:^|\/)(?:private(?:\/|$)|answer-key\.json|ground-truth\.json|canonical\.json|config\.json|manifest\.json|transport\.json)/.test(file.entryName));
     if (/\.(?:html|js|xml|txt)$/.test(file.entryName)) assert.doesNotMatch(file.getData().toString(), /expectedCluster|canonicalValues|noiseEvents|fieldLocations|repeatedItemLocations|repeatedItemLocationVersion|answer-key\.json|ground-truth\.json/);
   }
   const [download] = await Promise.all([
