@@ -32,6 +32,7 @@ Privacy & Security** and press **Open Anyway**.
 | http://127.0.0.1:4400 | SiteForge |
 | http://127.0.0.1:9400 and /wp-admin | The local WordPress and its dashboard |
 | http://127.0.0.1:9600 and /admin | The local Drupal and its admin |
+| http://localhost:8080 and /wp-admin | The Docker WordPress with a real theme (`bash scripts/test-theme.sh`), if you use it |
 | http://127.0.0.1:4400/wp-admin, /admin, /wordpress, /drupal | Shortcuts from SiteForge to the same pages. If that CMS is off, you get a Start button. |
 
 Both CMSs log in as `admin` / `password`, and opening their admin logs you in. Typing /wp-admin or /wp-login.php on
@@ -132,17 +133,18 @@ The same works on any other WordPress: install the plugin in `wordpress/siteforg
 Elementor). The local WordPress keeps its files and database in `.wordpress/` (about 260 MB). Delete `.wordpress/site/`
 to start again with an empty WordPress.
 
-### WordPress in Docker (draft)
+### WordPress in Docker, with a real theme
 
-An alternative to the Playground WordPress above: a real WordPress, PHP and MySQL in Docker. Needs Docker with the
-compose plugin. The SiteForge Importer plugin (`wordpress/siteforge-importer`) is mounted into the container and activated
+An alternative to the Playground WordPress above: a real WordPress, PHP and MySQL in Docker. Use it to put a generated
+site into an existing theme such as Astra or Kadence. Needs [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+(or Docker with the compose plugin) running. The SiteForge Importer plugin (`wordpress/siteforge-importer`) is mounted into the container and activated
 by `up`, which also writes its token to `.wordpress-docker/connection.json`.
 
 Pick a real theme, let SiteForge interrogate the site, then push the generated content into it. The theme keeps the
 design, and content types that already exist (from the theme or a plugin) are reused when they match:
 
 ```bash
-npm run wordpress:docker -- up                                 # WordPress at http://localhost:8080 (login in docker/.env)
+npm run wordpress:docker -- up                                 # WordPress at http://localhost:8080 (admin / password)
 npm run wordpress:docker -- theme astra                        # wordpress.org slug, a theme .zip file or a .zip URL
 npm run wordpress:docker -- wp plugin install <slug> --activate  # a plugin the theme needs for its content types
 npm run wordpress:docker -- inspect --site outputs/library     # content types, taxonomies, fields; where each type goes
@@ -169,8 +171,10 @@ WordPress, installs Astra, shows its content types and pushes the content in. `b
 examples/adversarial-library.yaml` picks another theme and settings file. The theme renders the pages, so SiteForge's
 markup noise is not on this site; use `test-site.sh` for that.
 
-Settings (port, passwords) go in `docker/.env`; copy `docker/.env.example`. Loading a new site replaces the previous one.
-This path has not been run end to end yet: check that the live URLs match `private/answer-key.json`.
+The login is `admin` / `password` and the address http://localhost:8080 unless you change them: copy
+`docker/.env.example` to `docker/.env` and edit it. Loading a new site replaces the previous one. This Docker path was
+added by zconti and is not covered by the automatic tests (they have no Docker); after a run, check that the live
+addresses match `private/answer-key.json` (load) or `private/wordpress-answer-key.json` (push).
 ## Put a site into a real Drupal
 
 SiteForge also runs a real Drupal 11 on your computer, the same way: no PHP, MySQL or Docker.
@@ -208,6 +212,7 @@ node src/cli.mjs evaluate --truth ... --actual ... --out ...           # score a
 npm run wordpress                                                      # start the local WordPress
 node src/cli.mjs wordpress push outputs/library --builder elementor     # push a site into it
 npm run drupal                                                         # start the local Drupal
+bash scripts/test-theme.sh astra                                       # Docker: a site inside the real Astra theme
 node src/cli.mjs drupal push outputs/library                           # put a site into it
 npm run benchmark:baseline -- outputs/library                          # score SiteForge's own simple crawler
 ```
@@ -232,7 +237,7 @@ npm run benchmark:baseline -- outputs/library                          # score S
 | `scripts/` | Starts the app and its background workers. `checks/` holds the browser tests and `tools/` the benchmarks and audits. |
 | `test/` and `features/` | Unit tests and behaviour tests. |
 | `config/` | Settings for the behaviour and mutation tests. |
-| `docker/` | An optional Docker setup that serves a finished test set. |
+| `docker/` | Optional Docker setups: a real WordPress with real themes (`npm run wordpress:docker`) and a server for a finished test set. |
 | `examples/` | Example settings files and the Smartcite output format. |
 | `.claude/skills/siteforge/` | Instructions that teach an AI assistant (such as Claude Code) to use SiteForge. |
 

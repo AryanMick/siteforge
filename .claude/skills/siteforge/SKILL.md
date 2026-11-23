@@ -22,6 +22,7 @@ explains everything for people; this file is the short version for an AI assista
 npm start            # installs what's missing, starts the app at http://127.0.0.1:4400 and opens the browser
 npm run wordpress    # starts only the local WordPress at http://127.0.0.1:9400 (login admin / password)
 npm run drupal       # starts only the local Drupal at http://127.0.0.1:9600 (login admin / password)
+bash scripts/test-theme.sh astra   # Docker (needs Docker running): a site inside a real theme at http://localhost:8080
 ```
 
 In the app: **Create test set** makes sites, **Saved test sets** lists them with Preview, ZIP, JSON (answer key),
