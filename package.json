@@ -35,6 +35,7 @@
     "test:preview-rebase": "node scripts/checks/check-preview-rebase.mjs",
     "test:catalog": "node scripts/checks/check-case-catalog.mjs",
     "test:matrix": "node scripts/checks/check-matrix.mjs",
+    "check:live": "node scripts/checks/check-live-site.mjs",
     "catalog:run": "node scripts/tools/run-case-catalog.mjs",
     "dev": "next dev --hostname 127.0.0.1 --port 4400",
     "build": "next build --webpack && node scripts/checks/check-runtime-artifacts.mjs",

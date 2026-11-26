@@ -100,3 +100,20 @@ jobs:
       - run: npm test
       - run: node scripts/start-siteforge.mjs --background
       - run: curl.exe --fail --silent --show-error http://127.0.0.1:4400/api/health
+  docker-wordpress:
+    # The Docker WordPress with a real theme (scripts/test-theme.sh): every page must match the WordPress answer key.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+      - run: npm ci
+      - run: bash scripts/test-theme.sh astra
+      - run: npm run check:live -- outputs/library/private/wordpress-answer-key.json http://localhost:8080
+      - if: failure()
+        run: npm run wordpress:docker -- wp theme list; docker compose -f docker/compose.wordpress.yaml logs --tail 80 wordpress
