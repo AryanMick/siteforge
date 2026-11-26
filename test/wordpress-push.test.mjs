@@ -193,3 +193,22 @@ test('siteKey replaces the site id in WordPress so test sets that share site ids
   assert.equal(summary.siteId, 'set-abc12345-wp-test');
   await assert.rejects(pushSiteToWordPress(siteDir, { url: 'http://wp.test', token: 'secret', fetch: wordpress.fetch, siteKey: '9-starts-with-a-digit' }), /siteKey must be/);
 });
+
+test('archive headings in the WordPress answer key follow what the theme shows', async () => {
+  const { alignArchiveTitles } = await import('../src/wordpress/push.mjs');
+  const { mkdtemp, readFile: read, writeFile: write, rm } = await import('node:fs/promises');
+  const { tmpdir } = await import('node:os');
+  const { join: joinPath } = await import('node:path');
+  const directory = await mkdtemp(joinPath(tmpdir(), 'siteforge-archive-'));
+  try {
+    const file = joinPath(directory, 'wordpress-answer-key.json');
+    const archive = (type, n, title) => ({ pageId: `archive-${type}-${n}`, kind: 'listing', url: `http://wp.test/${type}s/${n > 1 ? `page/${n}/` : ''}`, title, fields: { title }, canonicalValues: { title } });
+    await write(file, JSON.stringify({ pages: [archive('book', 1, 'Archives: Books'), archive('book', 2, 'Archives: Books'), archive('event', 1, 'Archives: Events')] }));
+    const html = { 'http://wp.test/books/': '<h1 class="page-title">Books</h1>', 'http://wp.test/events/': '<h1>Archives: <span>Events</span></h1>' };
+    const fake = async url => ({ ok: true, text: async () => html[String(url)] ?? '' });
+    assert.equal(await alignArchiveTitles(file, 'http://wp.test', fake), 2);
+    const key = JSON.parse(await read(file, 'utf8'));
+    assert.deepEqual(key.pages.map(page => [page.title, page.fields.title, page.canonicalValues.title]), [['Books', 'Books', 'Books'], ['Books', 'Books', 'Books'], ['Archives: Events', 'Archives: Events', 'Archives: Events']]);
+    assert.equal(await alignArchiveTitles(file, 'http://wp.test', async () => { throw new Error('offline'); }), 0, 'unreachable WordPress leaves the key alone');
+  } finally { await rm(directory, { recursive: true, force: true }); }
+});

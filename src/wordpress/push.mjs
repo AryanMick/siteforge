@@ -6,7 +6,7 @@ import { replaceFile } from '../site/replace-file.mjs';
 //
 // Big sites are streamed: canonical.json is read record by record and sent in batches, never as one request.
 import { createReadStream } from 'node:fs';
-import { open, readFile, stat, unlink } from 'node:fs/promises';
+import { open, readFile, stat, unlink, writeFile } from 'node:fs/promises';
 import { extname, join, resolve, sep } from 'node:path';
 import { PRESETS } from '../site/presets.mjs';
 import { slug } from '../site/util.mjs';
@@ -294,6 +294,7 @@ export async function pushSiteToWordPress(siteDir, { url, token, builder = 'bloc
   const answerKeyPath = join(site.root, 'private', ANSWER_KEY_FILE);
   const answers = await saveAnswerKey(client, site.id, answerKeyPath, { onProgress });
   const base = client.url ?? connection.url;
+  await alignArchiveTitles(answerKeyPath, base, fetch ?? globalThis.fetch);
   const summary = {
     siteId: site.id,
     url: status.wordpress?.home ?? `${base}/`,
@@ -314,6 +315,50 @@ export async function pushSiteToWordPress(siteDir, { url, token, builder = 'bloc
   };
   await onProgress({ phase: 'done', done: site.records, total: site.records, ...totals });
   return summary;
+}
+
+const pageText = html => html.replace(/<script[\s\S]*?<\/script>|<style[\s\S]*?<\/style>/gi, ' ').replace(/<[^>]+>/g, ' ')
+  .replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n))).replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/\s+/g, ' ');
+
+/**
+ * Archive headings depend on the theme. The plugin works them out with WordPress's own filters, but many themes (Astra,
+ * for one) only add theirs while drawing the page, so the heading can lose its "Archives:" prefix. Fetches the first
+ * page of each archive and, where it shows the plain name instead, writes that into the answer key. Leaves the key as
+ * it is when WordPress cannot be reached from here.
+ */
+export async function alignArchiveTitles(file, base, fetchImpl = globalThis.fetch) {
+  let key;
+  try { key = JSON.parse(await readFile(file, 'utf8')); } catch { return 0; }
+  const archives = new Map();
+  for (const page of key.pages ?? []) {
+    const type = /^archive-(.+)-\d+$/.exec(page.pageId ?? '')?.[1];
+    if (type && page.kind === 'listing') { if (!archives.has(type)) archives.set(type, []); archives.get(type).push(page); }
+  }
+  let changed = 0;
+  for (const pages of archives.values()) {
+    const title = pages[0].fields?.title;
+    const plain = typeof title === 'string' ? title.replace(/^[^:]{1,40}:\s+/, '') : null;
+    if (!plain || plain === title) continue;
+    let text;
+    try {
+      const first = pages.find(page => page.pageId.endsWith('-1')) ?? pages[0];
+      const response = await fetchImpl(new URL(first.url, `${base}/`), { signal: AbortSignal.timeout(30000) });
+      if (!response.ok) continue;
+      text = pageText(await response.text());
+    } catch { continue; }
+    if (text.includes(title) || !text.includes(plain)) continue;
+    for (const page of pages) {
+      page.title = plain;
+      for (const values of [page.fields, page.canonicalValues]) if (values?.title === title) values.title = plain;
+      changed++;
+    }
+  }
+  if (changed) {
+    const temporary = `${file}.${process.pid}.tmp`;
+    await writeFile(temporary, `${JSON.stringify(key, null, 2)}\n`, { mode: 0o600 });
+    await replaceFile(temporary, file);
+  }
+  return changed;
 }
 
 /** Deletes everything the import created for a site (in slices). */
