@@ -50,6 +50,12 @@ bricks, avada, siteorigin; WordPress only), `pageCount`. Under `noise`: `level` 
 for custom, `types` (names in `src/site/config.mjs`, for example `builder-modules`, `split-text-runs`,
 `shortcode-residue`).
 
+## Checking a running site
+
+`npm run check:live -- <answer-key.json> <site address>` checks that every page of a preview, the local WordPress or
+Drupal, or the Docker WordPress answers and shows the values in the answer key (use `wordpress-answer-key.json` for
+WordPress). Run it before scoring a crawler.
+
 ## Scoring
 
 The crawler writes `{ "version": 1, "pages": [{ "url", "cluster", "contentType"?, "fields"? }] }`; the format is

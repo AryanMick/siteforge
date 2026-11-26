@@ -172,9 +172,8 @@ examples/adversarial-library.yaml` picks another theme and settings file. The th
 markup noise is not on this site; use `test-site.sh` for that.
 
 The login is `admin` / `password` and the address http://localhost:8080 unless you change them: copy
-`docker/.env.example` to `docker/.env` and edit it. Loading a new site replaces the previous one. This Docker path was
-added by zconti and is not covered by the automatic tests (they have no Docker); after a run, check that the live
-addresses match `private/answer-key.json` (load) or `private/wordpress-answer-key.json` (push).
+`docker/.env.example` to `docker/.env` and edit it. Loading a new site replaces the previous one. GitHub's checks run
+`bash scripts/test-theme.sh astra` on every push and check every page against the WordPress answer key.
 ## Put a site into a real Drupal
 
 SiteForge also runs a real Drupal 11 on your computer, the same way: no PHP, MySQL or Docker.
@@ -202,6 +201,18 @@ as SiteForge made them, with the CMS's own markup around them.
   or all at once with `php wp-content/themes/<theme>/siteforge-import.php`.
 - **Drupal:** unzip the package into the site's `web/` folder and run `drush en siteforge_content -y`. Big sites keep
   importing on admin page loads and cron, or all at once with `drush php:eval "siteforge_content_import_all();"`.
+
+## Check a running site against its answer key
+
+```bash
+npm run check:live -- outputs/library/private/answer-key.json http://127.0.0.1:4310            # a preview
+npm run check:live -- outputs/library/private/answer-key.json http://127.0.0.1:9600            # the local Drupal
+npm run check:live -- outputs/library/private/wordpress-answer-key.json http://127.0.0.1:9400  # the local WordPress
+npm run check:live -- outputs/library/private/wordpress-answer-key.json http://localhost:8080   # the Docker WordPress
+```
+
+It opens every page in the answer key and reports pages that answer with the wrong status or don't show a value from
+the key. Use it before scoring Smartcite, so you know any difference is Smartcite's and not the site's.
 
 ## Command line
 
