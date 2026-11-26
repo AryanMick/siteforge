@@ -23,7 +23,7 @@
 // <site folder> is a generated site, such as outputs/library. The theme comes from the same code as the WP button in the
 // app (src/cms/cms-theme.mjs). Settings are read from docker/.env (see docker/.env.example).
 import { spawn, spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { copyFile, mkdir, rm, writeFile } from 'node:fs/promises';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,6 +34,9 @@ const importDirectory = join(root, '.wordpress-docker', 'import');
 const THEME_FILE = 'theme.zip';
 const connectionFile = join(root, '.wordpress-docker', 'connection.json');
 const IMPORTER = 'siteforge-importer';
+// Create the folder Docker mounts before Docker does: on Linux, Docker creates a missing mount folder as root, and then
+// this script cannot write connection.json or theme files into it.
+mkdirSync(importDirectory, { recursive: true });
 
 function readEnv() {
   const values = {};
@@ -99,7 +102,11 @@ async function connectImporter() {
   if (!/^[A-Za-z0-9_-]{20,128}$/.test(token ?? '')) fail('Could not read the SiteForge import token from WordPress. Check: npm run wordpress:docker -- wp plugin list');
   await mkdir(dirname(connectionFile), { recursive: true });
   const connection = { url: address, adminUrl: `${address}/wp-admin/`, username: adminUser, password: adminPassword, token, startedAt: new Date().toISOString() };
-  await writeFile(connectionFile, `${JSON.stringify(connection, null, 2)}\n`, { mode: 0o600 });
+  try { await writeFile(connectionFile, `${JSON.stringify(connection, null, 2)}\n`, { mode: 0o600 }); }
+  catch (error) {
+    if (error.code === 'EACCES') fail(`Cannot write ${connectionFile}: an earlier Docker run created .wordpress-docker as root. Delete that folder (sudo rm -rf .wordpress-docker), then run this again.`);
+    throw error;
+  }
 }
 
 // The SiteForge CLI against this WordPress (wordpress inspect | push | reset), with the Docker connection file.
